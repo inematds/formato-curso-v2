@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>INEMA.CLUB · Caderno calmo — Fundamentos de Engenharia de Prompts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ------------------------------------------------------------------
+     DIRECAO C — "Caderno calmo / jornada"
+     Display: Fraunces (soft, humanist serif com optical sizing) para titulos
+     Corpo:   Hanken Grotesk (grotesco humanista amigavel) para leitura
+     Acento:  sage/teal apagado sobre off-white quente
+  ------------------------------------------------------------------ */
+
+  :root {
+    /* neutros tingidos de quente — nada de #fff/#000 */
+    --paper:        #f5f1e8;   /* off-white quente (fundo da pagina) */
+    --paper-card:   #fbf8f1;   /* carta de leitura, um tom acima */
+    --paper-sunk:   #efeadd;   /* sulco / trilho */
+    --ink:          #2f3530;   /* tinta principal (verde-grafite) */
+    --ink-soft:     #5b615a;   /* tinta secundaria */
+    --ink-faint:    #8a8f86;   /* legendas, metadados */
+    --line:         #e2dccd;   /* linhas finas, divisorias */
+    --line-soft:    #ebe6d8;
+
+    /* acento calmo — sage/teal apagado */
+    --sage:         #6f8f80;
+    --sage-deep:    #4f6c5e;
+    --sage-wash:    #e6ede7;   /* fundo lavado do acento */
+    --sage-mist:    #dde6df;
+
+    /* secundario quente — terracota suave (uso minimo, so afeto) */
+    --clay:         #c08763;
+    --clay-wash:    #f0e2d6;
+
+    /* nota sticky macia */
+    --note:         #f3ecd0;
+    --note-edge:    #e6d9ac;
+    --note-ink:     #6a5f3a;
+
+    --radius:       22px;
+    --radius-sm:    14px;
+    --shadow-soft:  0 1px 2px rgba(47,53,48,.04), 0 14px 34px -18px rgba(47,53,48,.18);
+    --shadow-card:  0 1px 1px rgba(47,53,48,.03), 0 26px 60px -34px rgba(47,53,48,.22);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(120% 80% at 88% -8%, #f0ecdf 0%, transparent 55%),
+      radial-gradient(90% 70% at -6% 100%, #f1ece0 0%, transparent 50%),
+      var(--paper);
+    color: var(--ink);
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.7;
+    letter-spacing: .002em;
+  }
+
+  ::selection { background: var(--sage-mist); color: var(--ink); }
+
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
+
+  /* ---------------------------------------------------------------
+     TOP BAR — identidade discreta, calma
+  --------------------------------------------------------------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: color-mix(in srgb, var(--paper) 86%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 70px;
+  }
+  .brand { display: flex; align-items: center; gap: 13px; }
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: 10px;
+    background: var(--sage-wash);
+    border: 1px solid var(--sage-mist);
+    display: grid; place-items: center;
+    flex: 0 0 auto;
+  }
+  .wordmark {
+    font-family: "Hanken Grotesk", sans-serif;
+    font-weight: 700;
+    letter-spacing: .14em;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .wordmark .dot { color: var(--sage-deep); }
+  .topbar-right { display: flex; align-items: center; gap: 26px; }
+  .topbar-link {
+    font-size: 13.5px; color: var(--ink-soft); text-decoration: none;
+    font-weight: 500; letter-spacing: .01em;
+  }
+  .topbar-link:hover { color: var(--ink); }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(145deg, var(--clay-wash), var(--sage-wash));
+    border: 1px solid var(--line);
+    display: grid; place-items: center;
+    font-size: 13px; font-weight: 600; color: var(--ink-soft);
+  }
+
+  /* ---------------------------------------------------------------
+     LAYOUT — coluna unica generosa + trilha lateral da jornada
+  --------------------------------------------------------------- */
+  .stage {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 0;
+    padding: 56px 0 120px;
+  }
+
+  /* a TRILHA literal — sobe pela margem esquerda */
+  .trail {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: 8px;
+  }
+  .trail-sticky { position: sticky; top: 110px; display: flex; flex-direction: column; align-items: center; }
+  .trail-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-size: 11px; letter-spacing: .26em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600;
+    margin-top: 18px;
+  }
+
+  /* coluna de leitura */
+  .column { max-width: 720px; }
+
+  /* ---------------------------------------------------------------
+     "CONTINUAR DE ONDE PAREI" — acolhedor, primeiro contato
+  --------------------------------------------------------------- */
+  .resume {
+    position: relative;
+    background: linear-gradient(180deg, var(--sage-wash), color-mix(in srgb, var(--sage-wash) 60%, var(--paper-card)));
+    border: 1px solid var(--sage-mist);
+    border-radius: var(--radius);
+    padding: 26px 30px 28px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 46px;
+    overflow: hidden;
+  }
+  .resume::after {
+    /* folhinha solta no canto, afeto sutil */
+    content: "";
+    position: absolute; right: -34px; top: -30px;
+    width: 150px; height: 150px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, rgba(111,143,128,.16), transparent 62%);
+  }
+  .resume-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--sage-deep); font-weight: 600; margin-bottom: 10px;
+  }
+  .resume h2 {
+    font-family: "Fraunces", serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: 25px; line-height: 1.22;
+    margin: 0 0 4px; color: var(--ink);
+    letter-spacing: -.01em;
+  }
+  .resume p { margin: 0; color: var(--ink-soft); font-size: 15px; max-width: 52ch; }
+  .resume-foot {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .btn-resume {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--sage-deep); color: #fbf9f3;
+    border: none; border-radius: 999px;
+    padding: 12px 22px 12px 24px;
+    font-family: "Hanken Grotesk", sans-serif;
+    font-weight: 600; font-size: 14.5px; letter-spacing: .01em;
+    cursor: pointer;
+    box-shadow: 0 10px 24px -12px rgba(79,108,94,.7);
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  .btn-resume:hover { transform: translateY(-1px); background: #44604f; box-shadow: 0 16px 30px -14px rgba(79,108,94,.75); }
+  .btn-resume svg { transition: transform .18s ease; }
+  .btn-resume:hover svg { transform: translateX(3px); }
+  .resume-meta { font-size: 13.5px; color: var(--ink-soft); }
+  .resume-meta b { color: var(--ink); font-weight: 600; }
+
+  /* ---------------------------------------------------------------
+     CABECALHO DO MODULO
+  --------------------------------------------------------------- */
+  .modhead { margin-bottom: 40px; }
+  .crumbs {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12.5px; color: var(--ink-faint); letter-spacing: .04em;
+    margin-bottom: 18px;
+  }
+  .crumbs .sep { opacity: .5; }
+  .crumbs .here { color: var(--sage-deep); font-weight: 600; }
+  .modhead h1 {
+    font-family: "Fraunces", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-size: 42px; line-height: 1.1;
+    letter-spacing: -.018em;
+    margin: 0 0 16px; color: var(--ink);
+  }
+  .modhead .sub {
+    font-size: 18px; color: var(--ink-soft); line-height: 1.6;
+    max-width: 60ch; margin: 0;
+  }
+
+  /* barrinha de progresso do curso — caminho gentil, nao barra dura */
+  .courseprog {
+    display: flex; align-items: center; gap: 16px;
+    margin-top: 26px;
+  }
+  .courseprog .track {
+    position: relative; flex: 1; height: 8px; border-radius: 999px;
+    background: var(--paper-sunk);
+    box-shadow: inset 0 1px 2px rgba(47,53,48,.05);
+    overflow: hidden;
+  }
+  .courseprog .fill {
+    position: absolute; inset: 0 auto 0 0; width: 21%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--sage), var(--sage-deep));
+  }
+  .courseprog .pct { font-size: 13px; color: var(--ink-soft); font-weight: 600; white-space: nowrap; }
+  .courseprog .of  { font-size: 13px; color: var(--ink-faint); white-space: nowrap; }
+
+  /* ---------------------------------------------------------------
+     SUMARIO / TRILHA DA JORNADA (TOC como caminho)
+  --------------------------------------------------------------- */
+  .toc {
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 30px 34px 14px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 56px;
+  }
+  .toc-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 8px; padding-bottom: 18px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .toc-head h3 {
+    font-family: "Fraunces", serif; font-weight: 500; font-size: 19px;
+    margin: 0; letter-spacing: -.01em; color: var(--ink);
+  }
+  .toc-head .where { font-size: 13px; color: var(--ink-faint); }
+  .toc-head .where b { color: var(--sage-deep); font-weight: 600; }
+
+  .path { list-style: none; margin: 0; padding: 10px 0 0; position: relative; }
+  .path::before {
+    /* a linha continua do caminho, ligando os pontos */
+    content: ""; position: absolute; left: 13px; top: 26px; bottom: 30px;
+    width: 2px;
+    background: repeating-linear-gradient(var(--line) 0 6px, transparent 6px 12px);
+  }
+  .step {
+    position: relative; display: flex; align-items: flex-start; gap: 18px;
+    padding: 11px 12px 11px 0; border-radius: 12px;
+    text-decoration: none; color: inherit;
+    transition: background .16s ease;
+  }
+  .step:hover { background: var(--paper-sunk); }
+  .step .node {
+    position: relative; z-index: 1;
+    flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center; margin-top: 1px;
+    background: var(--paper-card); border: 2px solid var(--line);
+    font-size: 12px; font-weight: 700; color: var(--ink-faint);
+  }
+  .step .node svg { display: none; }
+  .step.done .node { background: var(--sage-deep); border-color: var(--sage-deep); color: #fff; }
+  .step.done .node .num { display: none; }
+  .step.done .node svg { display: block; }
+  .step.current .node {
+    background: var(--paper-card); border-color: var(--sage-deep); color: var(--sage-deep);
+    box-shadow: 0 0 0 5px var(--sage-wash);
+  }
+  .step .body { flex: 1; min-width: 0; padding-top: 2px; }
+  .step .ttl {
+    font-size: 15.5px; font-weight: 500; color: var(--ink);
+    line-height: 1.4;
+  }
+  .step.done .ttl { color: var(--ink-soft); }
+  .step .tag {
+    display: inline-block; margin-left: 10px; vertical-align: middle;
+    font-size: 11px; letter-spacing: .04em; font-weight: 600;
+    padding: 2px 9px; border-radius: 999px;
+  }
+  .step.current .tag { background: var(--sage-wash); color: var(--sage-deep); }
+  .step.done .tag    { background: transparent; color: var(--ink-faint); font-weight: 500; }
+  .step .hint { font-size: 13px; color: var(--ink-faint); margin-top: 1px; }
+
+  /* ---------------------------------------------------------------
+     SECAO EM FOCO
+  --------------------------------------------------------------- */
+  .section { position: relative; }
+  .section-eyebrow {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; letter-spacing: .02em; color: var(--sage-deep);
+    font-weight: 600; margin-bottom: 14px;
+  }
+  .section-eyebrow .seclabel {
+    display: inline-grid; place-items: center;
+    width: 30px; height: 30px; border-radius: 9px;
+    background: var(--sage-wash); border: 1px solid var(--sage-mist);
+    font-family: "Fraunces", serif; font-weight: 500; font-size: 15px;
+    color: var(--sage-deep);
+  }
+  .section h2.section-title {
+    font-family: "Fraunces", serif; font-optical-sizing: auto;
+    font-weight: 400; font-size: 33px; line-height: 1.16;
+    letter-spacing: -.015em; color: var(--ink);
+    margin: 0 0 26px;
+  }
+
+  /* corpo de leitura — line-length controlada (~66ch) */
+  .prose { max-width: 66ch; }
+  .prose p { margin: 0 0 22px; font-size: 18px; color: #3a403a; line-height: 1.72; }
+
+  /* GRIFO + NOTA do aluno ancorada na palavra "briefing" */
+  .anchor { position: relative; }
+  .mark {
+    background: linear-gradient(180deg, transparent 58%, var(--note) 58%);
+    padding: 0 2px; border-radius: 2px;
+    cursor: help; font-weight: 500;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  /* nota sticky macia, ancorada inline — fica deslocada na margem direita no desktop */
+  .note-sticky {
+    position: absolute; top: -8px; left: calc(100% + 30px);
+    width: 196px;
+    background: var(--note);
+    border: 1px solid var(--note-edge);
+    border-radius: 4px 14px 14px 14px;
+    padding: 13px 15px 14px;
+    box-shadow: 0 14px 26px -16px rgba(106,95,58,.6);
+    transform: rotate(1.4deg);
+    font-size: 13.5px; line-height: 1.5; color: var(--note-ink);
+  }
+  .note-sticky::before {
+    /* fita de papel */
+    content: ""; position: absolute; top: -9px; left: 22px;
+    width: 46px; height: 16px;
+    background: rgba(192,135,99,.28);
+    border: 1px solid rgba(192,135,99,.28);
+    transform: rotate(-4deg); border-radius: 2px;
+  }
+  .note-sticky .note-from {
+    display: block; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+    color: rgba(106,95,58,.7); font-weight: 700; margin-bottom: 5px;
+  }
+  .note-sticky .note-link { position: absolute; left: -30px; top: 14px; width: 30px; height: 2px; background: var(--note-edge); }
+
+  /* ---------------------------------------------------------------
+     CONTROLES DE APRENDIZADO — barra calma, fixa ao fim da secao
+  --------------------------------------------------------------- */
+  .learnbar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin: 34px 0 8px;
+    padding: 16px 18px;
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow-soft);
+  }
+  .ctrl {
+    display: inline-flex; align-items: center; gap: 9px;
+    border: 1px solid var(--line); background: var(--paper);
+    color: var(--ink-soft);
+    border-radius: 999px; padding: 9px 16px;
+    font-family: "Hanken Grotesk", sans-serif; font-weight: 600; font-size: 13.5px;
+    cursor: pointer; transition: all .16s ease;
+  }
+  .ctrl:hover { border-color: var(--sage-mist); background: var(--paper-card); color: var(--ink); }
+  .ctrl svg { flex: 0 0 auto; }
+
+  /* marcar como lido — toggle de estado */
+  .ctrl-read .check {
+    width: 20px; height: 20px; border-radius: 7px;
+    border: 2px solid var(--line); display: grid; place-items: center;
+    transition: all .18s ease;
+  }
+  .ctrl-read .check svg { opacity: 0; transition: opacity .14s ease; }
+  .ctrl-read.is-read {
+    background: var(--sage-wash); border-color: var(--sage-mist); color: var(--sage-deep);
+  }
+  .ctrl-read.is-read .check { background: var(--sage-deep); border-color: var(--sage-deep); }
+  .ctrl-read.is-read .check svg { opacity: 1; }
+  .ctrl-read .lbl-todo { display: inline; }
+  .ctrl-read .lbl-done { display: none; }
+  .ctrl-read.is-read .lbl-todo { display: none; }
+  .ctrl-read.is-read .lbl-done { display: inline; }
+
+  /* tenho duvida — estado guardado */
+  .ctrl-doubt.is-saved {
+    background: var(--clay-wash); border-color: #e7d2bf; color: #9a623c;
+  }
+  .ctrl-doubt.is-saved .heart { color: #b6724b; }
+
+  .learnbar .grow { flex: 1; }
+  .learnbar .saved-hint {
+    font-size: 12.5px; color: var(--ink-faint); display: inline-flex; align-items: center; gap: 7px;
+    opacity: 0; transform: translateY(2px); transition: all .25s ease;
+  }
+  .learnbar .saved-hint.show { opacity: 1; transform: none; }
+
+  /* ---------------------------------------------------------------
+     DIAGRAMA SVG — as 5 pecas
+  --------------------------------------------------------------- */
+  .diagram {
+    margin: 46px 0 8px;
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 30px 34px 34px;
+    box-shadow: var(--shadow-soft);
+  }
+  .diagram-cap {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    margin-bottom: 20px;
+  }
+  .diagram-cap h3 {
+    font-family: "Fraunces", serif; font-weight: 500; font-size: 18px;
+    margin: 0; color: var(--ink); letter-spacing: -.01em;
+  }
+  .diagram-cap span { font-size: 13px; color: var(--ink-faint); }
+  .pieces { display: flex; align-items: stretch; gap: 0; }
+  .piece {
+    flex: 1; text-align: center; position: relative;
+    padding: 6px 6px 0;
+  }
+  .piece-dot {
+    width: 58px; height: 58px; margin: 0 auto 12px;
+    border-radius: 18px;
+    display: grid; place-items: center;
+    background: var(--sage-wash);
+    border: 1px solid var(--sage-mist);
+    color: var(--sage-deep);
+    box-shadow: 0 8px 18px -12px rgba(79,108,94,.5);
+  }
+  .piece:nth-child(3) .piece-dot,
+  .piece:nth-child(7) .piece-dot,
+  .piece:nth-child(9) .piece-dot { } /* keep all sage; uniform calm */
+  .piece-name {
+    font-weight: 600; font-size: 14.5px; color: var(--ink); margin-bottom: 2px;
+  }
+  .piece-desc { font-size: 12px; color: var(--ink-faint); line-height: 1.4; }
+  .piece-conn {
+    flex: 0 0 34px; display: grid; place-items: center; color: var(--line);
+    padding-top: 22px;
+  }
+
+  /* ---------------------------------------------------------------
+     "MINHA JORNADA" — progresso consolidado, celebracao suave
+  --------------------------------------------------------------- */
+  .journey {
+    margin-top: 56px;
+    background:
+      radial-gradient(130% 90% at 100% 0%, color-mix(in srgb, var(--clay-wash) 50%, transparent) 0%, transparent 55%),
+      var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 32px 36px 34px;
+    box-shadow: var(--shadow-card);
+    position: relative; overflow: hidden;
+  }
+  .journey-top { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .journey-top .seed {
+    width: 38px; height: 38px; border-radius: 12px; flex: 0 0 auto;
+    background: var(--sage-wash); border: 1px solid var(--sage-mist);
+    display: grid; place-items: center; color: var(--sage-deep);
+  }
+  .journey h3 {
+    font-family: "Fraunces", serif; font-weight: 500; font-size: 22px;
+    margin: 0; letter-spacing: -.01em; color: var(--ink);
+  }
+  .journey .lede { margin: 6px 0 24px; color: var(--ink-soft); font-size: 15px; max-width: 56ch; }
+
+  .stones { display: flex; align-items: center; gap: 0; margin-bottom: 26px; }
+  .stone {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .stone .pebble {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--paper-sunk); border: 2px solid var(--line);
+  }
+  .stone.done .pebble { background: var(--sage-deep); border-color: var(--sage-deep); }
+  .stone.now .pebble  {
+    background: var(--paper-card); border-color: var(--sage-deep);
+    box-shadow: 0 0 0 5px var(--sage-wash);
+  }
+  .stone .cap { font-size: 11px; color: var(--ink-faint); font-weight: 600; white-space: nowrap; }
+  .stone.now .cap { color: var(--sage-deep); }
+  .bridge { flex: 1; height: 2px; margin: 0 2px; align-self: flex-start; margin-top: 8px;
+    background: repeating-linear-gradient(90deg, var(--line) 0 5px, transparent 5px 10px); }
+  .bridge.crossed { background: var(--sage-deep); }
+
+  .journey-stats { display: flex; gap: 30px; flex-wrap: wrap; align-items: center; }
+  .jstat { display: flex; align-items: center; gap: 11px; }
+  .jstat .ic {
+    width: 34px; height: 34px; border-radius: 10px; flex: 0 0 auto;
+    background: var(--paper-sunk); display: grid; place-items: center; color: var(--ink-soft);
+  }
+  .jstat .txt { line-height: 1.25; }
+  .jstat .txt b { font-weight: 600; color: var(--ink); font-size: 14.5px; display: block; }
+  .jstat .txt span { font-size: 12.5px; color: var(--ink-faint); }
+  .journey-go {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 9px;
+    background: transparent; color: var(--sage-deep);
+    border: 1px solid var(--sage-mist); border-radius: 999px;
+    padding: 11px 20px; font-weight: 600; font-size: 14px; cursor: pointer;
+    transition: all .16s ease;
+  }
+  .journey-go:hover { background: var(--sage-wash); }
+
+  /* nota celebracao suave */
+  .breathe {
+    margin-top: 20px; padding-top: 18px; border-top: 1px dashed var(--line);
+    font-size: 13.5px; color: var(--ink-soft); display: flex; align-items: center; gap: 9px;
+  }
+  .breathe .dotmark { color: var(--clay); }
+
+  @media (max-width: 1080px) {
+    .note-sticky { position: static; width: auto; transform: none; margin: 14px 0 2px;
+      border-radius: 4px 14px 14px 14px; display: inline-block; }
+    .note-sticky .note-link { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M4 17c4-1 5-9 9-11M6 14c3 2 9 1 12-5" stroke="#4f6c5e" stroke-width="1.7" stroke-linecap="round"/>
+            <circle cx="18.5" cy="6" r="1.7" fill="#4f6c5e"/>
+          </svg>
+        </span>
+        <span class="wordmark">INEMA<span class="dot">.</span>CLUB</span>
+      </div>
+      <nav class="topbar-right">
+        <a class="topbar-link" href="#">Trilhas</a>
+        <a class="topbar-link" href="#">Minha jornada</a>
+        <a class="topbar-link" href="#">Cadernos</a>
+        <span class="avatar">N</span>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="stage">
+
+      <!-- ===================== TRILHA / JORNADA (margem) ===================== -->
+      <aside class="trail" aria-hidden="true">
+        <div class="trail-sticky">
+          <svg width="40" height="320" viewBox="0 0 40 320" fill="none">
+            <!-- caminho serpenteante e gentil -->
+            <path d="M20 8 C 6 50, 34 84, 20 126 C 6 168, 34 200, 20 244 C 10 280, 24 296, 20 312"
+                  stroke="#e2dccd" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="2 7"/>
+            <!-- trecho ja percorrido -->
+            <path d="M20 8 C 6 50, 34 84, 20 126 C 12 152, 22 165, 20 178"
+                  stroke="#6f8f80" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="20" cy="8"   r="5" fill="#4f6c5e"/>
+            <circle cx="20" cy="68"  r="4.5" fill="#4f6c5e"/>
+            <circle cx="22" cy="128" r="4.5" fill="#4f6c5e"/>
+            <!-- voce esta aqui -->
+            <circle cx="20" cy="178" r="7" fill="#fbf8f1" stroke="#4f6c5e" stroke-width="2.6"/>
+            <circle cx="20" cy="178" r="3" fill="#4f6c5e"/>
+            <circle cx="22" cy="244" r="4" fill="#efeadd" stroke="#e2dccd" stroke-width="2"/>
+            <circle cx="20" cy="312" r="4" fill="#efeadd" stroke="#e2dccd" stroke-width="2"/>
+          </svg>
+          <span class="trail-label">sua jornada</span>
+        </div>
+      </aside>
+
+      <!-- ===================== COLUNA DE LEITURA ===================== -->
+      <main class="column">
+
+        <!-- CONTINUAR DE ONDE PAREI -->
+        <section class="resume">
+          <span class="resume-eyebrow">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 5v14l5-4 4 4 5-4V5l-5 4-4-4-5 4z" stroke="#4f6c5e" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            voce parou aqui
+          </span>
+          <h2>Continuar de onde voce parou</h2>
+          <p>Sem pressa. Vamos retomar a leitura na anatomia de um prompt — o mesmo ponto em que voce fechou ontem.</p>
+          <div class="resume-foot">
+            <button class="btn-resume">
+              Retomar a leitura
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <span class="resume-meta"><b>Secao 1 de 7</b> &middot; cerca de 6 min de leitura</span>
+          </div>
+        </section>
+
+        <!-- CABECALHO DO MODULO -->
+        <div class="modhead">
+          <nav class="crumbs">
+            <span>Trilha 1</span>
+            <span class="sep">/</span>
+            <span>Modulo 3 de 7</span>
+            <span class="sep">/</span>
+            <span class="here">Modulo 1.1</span>
+          </nav>
+          <h1>Fundamentos de Engenharia de Prompts</h1>
+          <p class="sub">Como escrever instrucoes que um modelo entende de primeira: contexto, tarefa, formato, exemplos e iteracao.</p>
+
+          <div class="courseprog">
+            <span class="of">Curso</span>
+            <div class="track"><div class="fill"></div></div>
+            <span class="pct">21% percorrido</span>
+          </div>
+        </div>
+
+        <!-- SUMARIO COMO TRILHA -->
+        <section class="toc">
+          <div class="toc-head">
+            <h3>O caminho deste modulo</h3>
+            <span class="where">Voce esta na <b>Secao 1 de 7</b></span>
+          </div>
+          <ol class="path">
+            <li><a class="step current" href="#sec1">
+              <span class="node">
+                <span class="num">1</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="body">
+                <span class="ttl">Veja a anatomia de um prompt <span class="tag">voce esta aqui</span></span>
+                <span class="hint">As cinco pecas que o modelo precisa para decidir.</span>
+              </span>
+            </a></li>
+            <li><a class="step" href="#"><span class="node"><span class="num">2</span></span><span class="body"><span class="ttl">Defina o papel e o contexto</span></span></a></li>
+            <li><a class="step" href="#"><span class="node"><span class="num">3</span></span><span class="body"><span class="ttl">Escreva a tarefa como um pedido unico</span></span></a></li>
+            <li><a class="step" href="#"><span class="node"><span class="num">4</span></span><span class="body"><span class="ttl">Especifique o formato da resposta</span></span></a></li>
+            <li><a class="step" href="#"><span class="node"><span class="num">5</span></span><span class="body"><span class="ttl">Ensine com poucos exemplos</span></span></a></li>
+            <li><a class="step" href="#"><span class="node"><span class="num">6</span></span><span class="body"><span class="ttl">Itere lendo a saida</span></span></a></li>
+            <li><a class="step" href="#"><span class="node"><span class="num">7</span></span><span class="body"><span class="ttl">Monte seu checklist</span></span></a></li>
+          </ol>
+        </section>
+
+        <!-- SECAO 1 -->
+        <section class="section" id="sec1">
+          <div class="section-eyebrow">
+            <span class="seclabel">1</span>
+            Anatomia
+          </div>
+          <h2 class="section-title">Veja a anatomia de um prompt</h2>
+
+          <div class="prose">
+            <p>
+              Um prompt nao e uma pergunta solta: e um pequeno
+              <span class="anchor">
+                <span class="mark" title="revisar isso depois">briefing</span>
+                <span class="note-sticky">
+                  <span class="note-link"></span>
+                  <span class="note-from">sua nota</span>
+                  revisar isso depois
+                </span>
+              </span>.
+              Quando o resultado vem errado, quase sempre falta uma das cinco pecas que o modelo precisa para decidir o que fazer.
+            </p>
+            <p>
+              A boa noticia: voce nao precisa acertar tudo de primeira. Cada peca que voce adiciona deixa o pedido um pouco mais claro — e o modelo um pouco mais certo do caminho.
+            </p>
+          </div>
+
+          <!-- CONTROLES DE APRENDIZADO -->
+          <div class="learnbar">
+            <button class="ctrl ctrl-read" id="btnRead" onclick="toggleRead()">
+              <span class="check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="lbl-todo">Marcar como lido</span>
+              <span class="lbl-done">Lido &middot; bom trabalho</span>
+            </button>
+
+            <button class="ctrl ctrl-doubt" id="btnDoubt" onclick="toggleDoubt()">
+              <svg class="heart" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 16.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.6"/></svg>
+              <span>Tenho uma duvida</span>
+            </button>
+
+            <button class="ctrl" onclick="document.querySelector('.note-sticky').scrollIntoView({behavior:'smooth',block:'center'})">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 4h14v11l-5 5H5V4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 20v-5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9h8M8 12.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <span>Ver minha nota</span>
+            </button>
+
+            <span class="grow"></span>
+            <span class="saved-hint" id="savedHint">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#4f6c5e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              guardado no seu caderno
+            </span>
+          </div>
+
+          <!-- DIAGRAMA SVG das 5 pecas -->
+          <div class="diagram">
+            <div class="diagram-cap">
+              <h3>As cinco pecas de um prompt</h3>
+              <span>cada uma responde a uma pergunta do modelo</span>
+            </div>
+            <div class="pieces">
+              <!-- 1 -->
+              <div class="piece">
+                <div class="piece-dot">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 19V7l8-4 8 4v12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 19v-6h6v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="piece-name">Contexto</div>
+                <div class="piece-desc">onde isso vive</div>
+              </div>
+              <div class="piece-conn"><svg width="22" height="14" viewBox="0 0 22 14" fill="none"><path d="M1 7h18M14 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <!-- 2 -->
+              <div class="piece">
+                <div class="piece-dot">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M5 5h14v14H5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8.5 12l2.2 2.2L16 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="piece-name">Tarefa</div>
+                <div class="piece-desc">o que fazer</div>
+              </div>
+              <div class="piece-conn"><svg width="22" height="14" viewBox="0 0 22 14" fill="none"><path d="M1 7h18M14 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <!-- 3 -->
+              <div class="piece">
+                <div class="piece-dot">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M6 4h9l3 3v13H6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 11h6M9 14.5h6M9 8h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </div>
+                <div class="piece-name">Formato</div>
+                <div class="piece-desc">como entregar</div>
+              </div>
+              <div class="piece-conn"><svg width="22" height="14" viewBox="0 0 22 14" fill="none"><path d="M1 7h18M14 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <!-- 4 -->
+              <div class="piece">
+                <div class="piece-dot">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 6h11M4 12h16M4 18h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="19" cy="6" r="2.2" stroke="currentColor" stroke-width="1.6"/></svg>
+                </div>
+                <div class="piece-name">Exemplos</div>
+                <div class="piece-desc">o que parecer</div>
+              </div>
+              <div class="piece-conn"><svg width="22" height="14" viewBox="0 0 22 14" fill="none"><path d="M1 7h18M14 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <!-- 5 -->
+              <div class="piece">
+                <div class="piece-dot">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M19 8a7 7 0 10.5 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M19 4v4h-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="piece-name">Iteracao</div>
+                <div class="piece-desc">ler e ajustar</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MINHA JORNADA -->
+        <section class="journey">
+          <div class="journey-top">
+            <span class="seed" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 21v-7M12 14c0-3 2-5 5-5 0 3-2 5-5 5zM12 14c0-3-2-5-5-5 0 3 2 5 5 5z" stroke="#4f6c5e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <h3>Minha jornada</h3>
+          </div>
+          <p class="lede">Um passo de cada vez. Voce ja atravessou dois modulos e esta no terceiro — bem no seu ritmo.</p>
+
+          <div class="stones">
+            <div class="stone done"><span class="pebble"></span><span class="cap">Mod. 1</span></div>
+            <div class="bridge crossed"></div>
+            <div class="stone done"><span class="pebble"></span><span class="cap">Mod. 2</span></div>
+            <div class="bridge crossed"></div>
+            <div class="stone now"><span class="pebble"></span><span class="cap">Mod. 3 &middot; agora</span></div>
+            <div class="bridge"></div>
+            <div class="stone"><span class="pebble"></span><span class="cap">Mod. 4</span></div>
+            <div class="bridge"></div>
+            <div class="stone"><span class="pebble"></span><span class="cap">Mod. 5</span></div>
+            <div class="bridge"></div>
+            <div class="stone"><span class="pebble"></span><span class="cap">+2</span></div>
+          </div>
+
+          <div class="journey-stats">
+            <div class="jstat">
+              <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 5v14l5-4 4 4 5-4V5l-5 4-4-4-5 4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+              <span class="txt"><b>Modulo 3 / 7</b><span>na Trilha 1</span></span>
+            </div>
+            <div class="jstat">
+              <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 4h14v11l-5 5H5V4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 20v-5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+              <span class="txt"><b>3 notas</b><span>guardadas no caderno</span></span>
+            </div>
+            <div class="jstat">
+              <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 16.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.5"/></svg></span>
+              <span class="txt"><b>1 duvida</b><span>para retomar com calma</span></span>
+            </div>
+            <button class="journey-go">
+              Abrir meu caderno
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+
+          <div class="breathe">
+            <span class="dotmark">&#10047;</span>
+            Cada secao concluida vira uma pedra no seu caminho. Sem placar, sem pressa — so o progresso ficando visivel.
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    function toggleRead() {
+      var b = document.getElementById('btnRead');
+      b.classList.toggle('is-read');
+      if (b.classList.contains('is-read')) flashSaved();
+    }
+    function toggleDoubt() {
+      var b = document.getElementById('btnDoubt');
+      b.classList.toggle('is-saved');
+      var s = b.querySelector('span:last-child');
+      s.textContent = b.classList.contains('is-saved') ? 'Duvida guardada' : 'Tenho uma duvida';
+      if (b.classList.contains('is-saved')) flashSaved();
+    }
+    var hideT;
+    function flashSaved() {
+      var h = document.getElementById('savedHint');
+      h.classList.add('show');
+      clearTimeout(hideT);
+      hideT = setTimeout(function(){ h.classList.remove('show'); }, 2200);
+    }
+  </script>
+</body>
+</html>

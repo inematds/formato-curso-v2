@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>INEMA.CLUB — Módulo 1.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* neutros tingidos — nada de #fff/#000 puro */
+    --cream:        #f3e9d8;   /* creme quente — fundo */
+    --cream-2:      #ede0cb;   /* creme um tom abaixo */
+    --paper:        #f7f0e3;
+    --plum:         #2a0f24;   /* ameixa profundo — tinta principal */
+    --plum-2:       #3d1733;   /* ameixa um tom acima */
+    --plum-soft:    #5a2a4d;
+    --ink:          #25101f;   /* corpo de texto, quase preto-ameixa */
+    --ink-2:        #4a2b41;   /* texto secundário */
+    --accent:       #ff5a36;   /* UM acento vibrante — vermelhão */
+    --accent-deep:  #d8401f;
+    --line:         #2a0f24;
+    --line-soft:    rgba(42,15,36,.22);
+
+    --sans: 'Archivo', system-ui, sans-serif;
+    --black: 'Archivo Black', 'Archivo', sans-serif;
+    --serif: 'Spectral', Georgia, serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:17px;
+    line-height:1.55;
+    /* textura sutil de papel via dois gradientes radiais bem leves */
+    background-image:
+      radial-gradient(120% 80% at 12% -5%, rgba(255,90,54,.05), transparent 55%),
+      radial-gradient(90% 70% at 100% 0%, rgba(42,15,36,.05), transparent 50%);
+  }
+  ::selection{ background:var(--accent); color:var(--cream); }
+
+  .shell{ max-width:1280px; margin:0 auto; }
+
+  /* ---------------------------------------------------------------- TOPBAR */
+  .topbar{
+    display:flex; align-items:stretch; justify-content:space-between;
+    border-bottom:2px solid var(--line);
+    background:var(--plum);
+    color:var(--cream);
+  }
+  .brand{
+    display:flex; align-items:center; gap:.6rem;
+    padding:18px 26px;
+    border-right:2px solid rgba(243,233,216,.18);
+  }
+  .brand .mark{
+    width:30px; height:30px; flex:none;
+    border-radius:50%;
+    background:var(--accent);
+    box-shadow:inset 0 0 0 4px var(--plum), 0 0 0 2px var(--accent);
+  }
+  .brand .word{
+    font-family:var(--black);
+    font-size:1.32rem;
+    letter-spacing:-.02em;
+    line-height:1;
+  }
+  .brand .word .dot{ color:var(--accent); }
+  .topnav{
+    display:flex; align-items:stretch; margin-left:auto;
+    font-size:.7rem; letter-spacing:.16em; text-transform:uppercase; font-weight:700;
+  }
+  .topnav a{
+    display:flex; align-items:center; padding:0 22px;
+    color:rgba(243,233,216,.66); text-decoration:none;
+    border-left:1px solid rgba(243,233,216,.16);
+    transition:color .15s, background .15s;
+  }
+  .topnav a:hover{ color:var(--cream); background:rgba(243,233,216,.06); }
+  .topnav a.active{ color:var(--cream); }
+  .topnav .ticker{
+    display:flex; align-items:center; gap:10px;
+    padding:0 22px; background:var(--accent); color:var(--plum);
+    border-left:2px solid var(--line);
+    letter-spacing:.1em;
+  }
+  .topnav .ticker b{ font-family:var(--black); letter-spacing:0; font-size:.82rem; }
+
+  /* ---------------------------------------------------------------- HEADER MÓDULO */
+  .modulehead{
+    position:relative;
+    padding:42px 26px 30px;
+    border-bottom:2px solid var(--line);
+    overflow:hidden;
+  }
+  .kicker{
+    display:inline-flex; align-items:center; gap:12px;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; font-weight:800;
+    color:var(--plum);
+  }
+  .kicker .pill{
+    background:var(--plum); color:var(--cream);
+    padding:5px 11px 4px; letter-spacing:.14em;
+  }
+  .kicker .rail{ height:2px; width:54px; background:var(--accent); }
+  .module-title{
+    font-family:var(--black);
+    font-size:clamp(2.4rem, 4.6vw, 3.7rem);
+    line-height:.95;
+    letter-spacing:-.025em;
+    margin:18px 0 0;
+    max-width:18ch;
+    color:var(--ink);
+  }
+  .module-title em{
+    font-style:normal;
+    color:var(--accent-deep);
+  }
+  .module-sub{
+    font-family:var(--serif);
+    font-size:1.18rem;
+    line-height:1.45;
+    color:var(--ink-2);
+    max-width:62ch;
+    margin:20px 0 0;
+  }
+  /* número fantasma gigante do módulo, sangrando pela direita */
+  .ghost-num{
+    position:absolute; top:-3.2rem; right:-1.2rem;
+    font-family:var(--black);
+    font-size:18rem; line-height:1;
+    color:transparent;
+    -webkit-text-stroke:2px rgba(42,15,36,.10);
+    pointer-events:none; user-select:none;
+    z-index:0;
+  }
+  .modulehead > *{ position:relative; z-index:1; }
+
+  /* ---------------------------------------------------------------- WAYFINDING */
+  .wayfind{
+    display:grid;
+    grid-template-columns: 1.1fr .9fr 1fr;
+    border-bottom:2px solid var(--line);
+    background:var(--cream-2);
+  }
+  .way-cell{ padding:24px 26px; }
+  .way-cell + .way-cell{ border-left:2px solid var(--line); }
+  .way-label{
+    font-size:.68rem; letter-spacing:.2em; text-transform:uppercase; font-weight:800;
+    color:var(--plum-soft); margin:0 0 10px;
+  }
+  .way-big{
+    font-family:var(--black);
+    line-height:.9; letter-spacing:-.02em; color:var(--ink);
+    display:flex; align-items:baseline; gap:.35ch;
+  }
+  .way-big .huge{ font-size:3.6rem; }
+  .way-big .of{ font-size:1.4rem; color:var(--ink-2); }
+  .way-big .accent{ color:var(--accent-deep); }
+  .way-meta{
+    font-size:.84rem; color:var(--ink-2); margin-top:8px; line-height:1.4;
+  }
+  /* barra de progresso do curso — tipográfica + traço grosso */
+  .pct-row{ display:flex; align-items:baseline; gap:.5ch; }
+  .pct-num{ font-family:var(--black); font-size:3.6rem; line-height:.9; letter-spacing:-.03em; color:var(--accent-deep); }
+  .pct-sign{ font-family:var(--black); font-size:1.8rem; color:var(--ink); }
+  .progress-track{
+    margin-top:14px; height:14px; background:var(--cream);
+    border:2px solid var(--line); position:relative; overflow:hidden;
+  }
+  .progress-fill{
+    position:absolute; inset:0 auto 0 0; width:21%;
+    background:repeating-linear-gradient(135deg, var(--accent) 0 9px, var(--accent-deep) 9px 18px);
+  }
+  .progress-ticks{
+    display:flex; justify-content:space-between; margin-top:7px;
+    font-size:.6rem; letter-spacing:.12em; color:var(--plum-soft); font-weight:700;
+  }
+
+  /* ---------------------------------------------------------------- GRID PRINCIPAL */
+  .layout{
+    display:grid;
+    grid-template-columns: 296px 1fr;
+  }
+  .toc{
+    border-right:2px solid var(--line);
+    background:var(--plum);
+    color:var(--cream);
+  }
+  .toc-head{
+    padding:22px 22px 16px;
+    border-bottom:1px solid rgba(243,233,216,.16);
+  }
+  .toc-head h2{
+    margin:0; font-family:var(--black);
+    font-size:1.05rem; letter-spacing:.02em; text-transform:uppercase;
+  }
+  .toc-head p{ margin:6px 0 0; font-size:.74rem; color:rgba(243,233,216,.6); letter-spacing:.06em; }
+  .toc-list{ list-style:none; margin:0; padding:0; }
+  .toc-item{
+    display:grid; grid-template-columns: 58px 1fr; align-items:center;
+    padding:0; min-height:62px;
+    border-bottom:1px solid rgba(243,233,216,.12);
+    text-decoration:none; color:rgba(243,233,216,.78);
+    transition:background .15s, color .15s;
+    position:relative;
+  }
+  .toc-item:hover{ background:rgba(243,233,216,.06); color:var(--cream); }
+  .toc-num{
+    font-family:var(--black); font-size:1.9rem; line-height:1;
+    color:rgba(243,233,216,.32);
+    text-align:center; align-self:center;
+    transition:color .15s;
+  }
+  .toc-item:hover .toc-num{ color:var(--cream); }
+  .toc-txt{ font-size:.92rem; line-height:1.2; font-weight:600; padding:12px 18px 12px 4px; }
+  .toc-item.done .toc-txt{ color:rgba(243,233,216,.5); }
+  .toc-item.done .toc-num::after{
+    content:"✓"; position:absolute; /* not used, kept clean */
+  }
+  .toc-item.current{
+    background:var(--accent); color:var(--plum);
+  }
+  .toc-item.current .toc-num{ color:var(--plum); }
+  .toc-item.current .toc-txt{ color:var(--plum); font-weight:800; }
+  .toc-item.current::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:var(--plum);
+  }
+  .toc-foot{
+    padding:18px 22px;
+    font-size:.7rem; letter-spacing:.12em; text-transform:uppercase;
+    color:rgba(243,233,216,.55); font-weight:700;
+    border-top:1px solid rgba(243,233,216,.16);
+  }
+
+  /* ---------------------------------------------------------------- LEITURA */
+  .reader{ padding:0; background:var(--cream); min-width:0; }
+  .reader-inner{ padding:40px 56px 48px; max-width:none; }
+
+  .section-head{
+    display:grid; grid-template-columns: auto 1fr; gap:26px; align-items:start;
+    padding-bottom:26px; margin-bottom:30px;
+    border-bottom:2px solid var(--line);
+  }
+  .section-bignum{
+    font-family:var(--black);
+    font-size:7.5rem; line-height:.78; letter-spacing:-.05em;
+    color:var(--accent-deep);
+  }
+  .section-bignum .o{
+    display:block; font-size:.7rem; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--plum-soft); margin-top:.4rem; -webkit-text-stroke:0;
+  }
+  .section-title{
+    font-family:var(--black);
+    font-size:clamp(1.9rem, 3.2vw, 2.7rem);
+    line-height:1; letter-spacing:-.02em; margin:.2rem 0 0; color:var(--ink);
+    max-width:16ch;
+  }
+  .section-tools{
+    display:flex; flex-wrap:wrap; gap:10px; margin-top:18px;
+  }
+
+  /* botões / controles de aprendizado */
+  .btn{
+    font-family:var(--sans); font-weight:800;
+    font-size:.74rem; letter-spacing:.12em; text-transform:uppercase;
+    padding:11px 16px;
+    border:2px solid var(--line); background:var(--cream);
+    color:var(--ink); cursor:pointer;
+    display:inline-flex; align-items:center; gap:9px;
+    transition:transform .08s, background .15s, color .15s, box-shadow .15s;
+    box-shadow:3px 3px 0 var(--line);
+  }
+  .btn:hover{ transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--line); }
+  .btn:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--line); }
+  .btn .dotmark{
+    width:13px; height:13px; border:2px solid var(--line); border-radius:50%;
+    flex:none; background:transparent; transition:background .15s;
+  }
+  .btn[aria-pressed="true"]{
+    background:var(--plum); color:var(--cream); border-color:var(--line);
+  }
+  .btn[aria-pressed="true"] .dotmark{ background:var(--accent); border-color:var(--accent); }
+  .btn.is-accent{ background:var(--accent); color:var(--plum); border-color:var(--line); }
+  .btn.is-accent:hover{ background:var(--accent-deep); color:var(--cream); }
+  .btn .kbd-check{ font-family:var(--black); font-size:.9rem; line-height:1; }
+
+  /* corpo de leitura */
+  .prose{ max-width:66ch; }
+  .lede{
+    font-family:var(--serif);
+    font-size:1.42rem; line-height:1.5; color:var(--ink);
+    margin:0 0 1.4rem;
+    text-indent:0;
+  }
+  .lede .drop{
+    float:left; font-family:var(--black);
+    font-size:4.2rem; line-height:.72; margin:.35rem .55rem 0 0;
+    color:var(--accent-deep);
+  }
+  .prose p{ font-size:1.06rem; color:var(--ink); margin:0 0 1.2rem; max-width:66ch; }
+
+  /* grifo = sublinhado forte + nota ancorada inline na margem */
+  .annot{ position:relative; }
+  .grifo{
+    font-weight:700; color:var(--ink);
+    background:linear-gradient(transparent 62%, rgba(255,90,54,.42) 62% 92%, transparent 92%);
+    padding:0 .06em;
+    box-decoration-break:clone;
+    border-bottom:3px solid var(--accent-deep);
+    cursor:help;
+  }
+  .note-tag{
+    position:absolute; top:-1.65rem; left:50%; transform:translateX(-50%);
+    background:var(--plum); color:var(--cream);
+    font-size:.64rem; letter-spacing:.08em; font-weight:700; text-transform:uppercase;
+    padding:4px 9px; white-space:nowrap;
+    box-shadow:2px 2px 0 var(--accent-deep);
+  }
+  .note-tag::after{
+    content:""; position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);
+    border-left:6px solid transparent; border-right:6px solid transparent;
+    border-top:6px solid var(--plum);
+  }
+
+  /* nota do aluno na margem direita (callout) */
+  .reader-body{
+    display:grid; grid-template-columns: 1fr 232px; gap:40px; align-items:start;
+  }
+  .margin-note{
+    position:relative;
+    background:var(--paper);
+    border:2px solid var(--line);
+    box-shadow:5px 5px 0 var(--plum);
+    padding:16px 16px 18px;
+  }
+  .margin-note::before{
+    content:"NOTA DO ALUNO";
+    position:absolute; top:-13px; left:14px;
+    background:var(--accent); color:var(--plum);
+    font-size:.6rem; letter-spacing:.16em; font-weight:800; padding:3px 8px;
+    border:2px solid var(--line);
+  }
+  .margin-note .mn-anchor{
+    font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; font-weight:800;
+    color:var(--accent-deep); margin:6px 0 8px;
+  }
+  .margin-note .mn-text{
+    font-family:var(--serif); font-style:italic;
+    font-size:1.12rem; line-height:1.4; color:var(--ink);
+  }
+  .margin-note .mn-meta{
+    margin-top:12px; font-size:.66rem; letter-spacing:.06em;
+    color:var(--plum-soft); font-weight:700; text-transform:uppercase;
+    display:flex; align-items:center; gap:8px;
+  }
+  .margin-note .mn-meta .edit{
+    margin-left:auto; text-decoration:underline; text-decoration-color:var(--accent);
+    text-underline-offset:3px; cursor:pointer; color:var(--ink);
+  }
+
+  /* ---------------------------------------------------------------- DIAGRAMA */
+  .diagram{
+    margin:34px 0 8px;
+    border:2px solid var(--line);
+    background:var(--plum);
+    color:var(--cream);
+    grid-column:1 / -1;
+  }
+  .diagram-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:18px 22px 14px;
+    border-bottom:1px solid rgba(243,233,216,.18);
+  }
+  .diagram-head h3{
+    margin:0; font-family:var(--black); font-size:1.1rem;
+    letter-spacing:.02em; text-transform:uppercase;
+  }
+  .diagram-head .tag{
+    font-size:.66rem; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--accent); font-weight:800;
+  }
+  .diagram-canvas{ padding:10px 12px 18px; }
+  .diagram-legend{
+    display:flex; gap:18px; flex-wrap:wrap;
+    padding:0 22px 18px; font-size:.72rem; color:rgba(243,233,216,.7);
+    letter-spacing:.04em;
+  }
+  .diagram-legend b{ color:var(--accent); }
+
+  /* ---------------------------------------------------------------- JORNADA */
+  .journey{
+    margin-top:38px;
+    border:2px solid var(--line);
+    background:var(--cream-2);
+    grid-column:1 / -1;
+    display:grid; grid-template-columns: auto 1fr auto;
+    align-items:stretch;
+  }
+  .journey .j-num{
+    background:var(--accent); color:var(--plum);
+    display:flex; flex-direction:column; justify-content:center;
+    padding:22px 26px; border-right:2px solid var(--line);
+  }
+  .journey .j-num .lbl{ font-size:.62rem; letter-spacing:.18em; font-weight:800; text-transform:uppercase; }
+  .journey .j-num .big{ font-family:var(--black); font-size:3.4rem; line-height:.9; letter-spacing:-.02em; }
+  .journey .j-mid{ padding:22px 26px; display:flex; flex-direction:column; justify-content:center; }
+  .journey .j-mid h3{
+    margin:0 0 4px; font-family:var(--black); font-size:1.25rem; letter-spacing:-.01em; color:var(--ink);
+  }
+  .journey .j-mid p{ margin:0; font-size:.92rem; color:var(--ink-2); max-width:52ch; }
+  .journey .j-mid .chips{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .chip{
+    font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; font-weight:800;
+    padding:5px 9px; border:2px solid var(--line); background:var(--cream); color:var(--ink);
+  }
+  .chip.lido{ background:var(--plum); color:var(--cream); }
+  .chip.duvida{ background:var(--accent); color:var(--plum); }
+  .journey .j-cta{
+    display:flex; align-items:center; padding:22px 26px; border-left:2px solid var(--line);
+  }
+
+  /* footer da leitura: navegação seção a seção */
+  .reader-foot{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:40px; padding-top:22px; border-top:2px solid var(--line);
+  }
+  .navbtn{
+    text-decoration:none; color:var(--ink); display:flex; flex-direction:column; gap:3px;
+  }
+  .navbtn .dir{ font-size:.64rem; letter-spacing:.18em; text-transform:uppercase; font-weight:800; color:var(--plum-soft); }
+  .navbtn .ttl{ font-family:var(--black); font-size:1.05rem; letter-spacing:-.01em; }
+  .navbtn.next{ text-align:right; }
+  .navbtn.disabled{ opacity:.38; pointer-events:none; }
+
+  .footer{
+    border-top:2px solid var(--line);
+    background:var(--plum); color:rgba(243,233,216,.7);
+    padding:20px 26px; display:flex; justify-content:space-between; align-items:center;
+    font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; font-weight:700;
+  }
+  .footer .word{ font-family:var(--black); color:var(--cream); letter-spacing:-.01em; text-transform:none; }
+  .footer .word .dot{ color:var(--accent); }
+
+  @media (max-width:1100px){
+    .reader-body{ grid-template-columns:1fr; }
+    .margin-note{ max-width:380px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark"></span>
+      <span class="word">INEMA<span class="dot">.</span>CLUB</span>
+    </div>
+    <nav class="topnav">
+      <a href="#">Trilhas</a>
+      <a href="#" class="active">Leitura</a>
+      <a href="#">Minha jornada</a>
+      <span class="ticker">Trilha 1 · <b>Módulo 3/7</b></span>
+    </nav>
+  </header>
+
+  <!-- HEADER MÓDULO -->
+  <section class="modulehead">
+    <span class="ghost-num">1.1</span>
+    <span class="kicker">
+      <span class="pill">Módulo 1.1</span>
+      <span class="rail"></span>
+      Fundamentos
+    </span>
+    <h1 class="module-title">Fundamentos de <em>Engenharia<br>de Prompts</em></h1>
+    <p class="module-sub">Como escrever instruções que um modelo entende de primeira: contexto, tarefa, formato, exemplos e iteração.</p>
+  </section>
+
+  <!-- WAYFINDING / PROGRESSO -->
+  <section class="wayfind">
+    <div class="way-cell">
+      <p class="way-label">Você está em</p>
+      <div class="way-big">
+        <span class="huge">01</span>
+        <span class="of">/ 07</span>
+      </div>
+      <p class="way-meta">Seção <b>1 de 7</b> deste módulo<br>“Veja a anatomia de um prompt”</p>
+    </div>
+    <div class="way-cell">
+      <p class="way-label">Posição na trilha</p>
+      <div class="way-big">
+        <span class="huge accent">3</span>
+        <span class="of">/ 7</span>
+      </div>
+      <p class="way-meta">Módulo 3 de 7 — <b>Trilha 1</b><br>Caminho: Fundamentos → Prática</p>
+    </div>
+    <div class="way-cell">
+      <p class="way-label">Curso concluído</p>
+      <div class="pct-row">
+        <span class="pct-num">21</span><span class="pct-sign">%</span>
+      </div>
+      <div class="progress-track"><span class="progress-fill"></span></div>
+      <div class="progress-ticks"><span>Início</span><span>Trilha 1</span><span>Trilha 2</span><span>Fim</span></div>
+    </div>
+  </section>
+
+  <!-- LAYOUT: TOC + LEITURA -->
+  <div class="layout">
+
+    <!-- TOC -->
+    <aside class="toc">
+      <div class="toc-head">
+        <h2>Sumário</h2>
+        <p>7 SEÇÕES · ~24 MIN</p>
+      </div>
+      <nav>
+        <ol class="toc-list">
+          <a class="toc-item current" href="#sec1"><span class="toc-num">1</span><span class="toc-txt">Veja a anatomia de um prompt</span></a>
+          <a class="toc-item" href="#"><span class="toc-num">2</span><span class="toc-txt">Defina o papel e o contexto</span></a>
+          <a class="toc-item" href="#"><span class="toc-num">3</span><span class="toc-txt">Escreva a tarefa como um pedido único</span></a>
+          <a class="toc-item" href="#"><span class="toc-num">4</span><span class="toc-txt">Especifique o formato da resposta</span></a>
+          <a class="toc-item" href="#"><span class="toc-num">5</span><span class="toc-txt">Ensine com poucos exemplos</span></a>
+          <a class="toc-item" href="#"><span class="toc-num">6</span><span class="toc-txt">Itere lendo a saída</span></a>
+          <a class="toc-item" href="#"><span class="toc-num">7</span><span class="toc-txt">Monte seu checklist</span></a>
+        </ol>
+      </nav>
+      <div class="toc-foot">1 de 7 lidas — siga em frente ↓</div>
+    </aside>
+
+    <!-- LEITURA -->
+    <main class="reader">
+      <div class="reader-inner" id="sec1">
+
+        <!-- cabeçalho da seção -->
+        <div class="section-head">
+          <div class="section-bignum">
+            1
+            <span class="o">Seção · em foco</span>
+          </div>
+          <div>
+            <h2 class="section-title">Veja a anatomia de um prompt</h2>
+            <div class="section-tools">
+              <button class="btn" id="btnLido" aria-pressed="false" onclick="toggleLido()">
+                <span class="dotmark"></span>
+                <span id="lidoTxt">Marcar como lido</span>
+              </button>
+              <button class="btn is-accent" id="btnDuvida" onclick="toggleDuvida(this)">
+                <span class="kbd-check">?</span> Tenho dúvida
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- corpo + nota na margem + diagrama -->
+        <div class="reader-body">
+
+          <div class="prose">
+            <p class="lede">
+              <span class="drop">U</span>m prompt não é uma pergunta solta: é um pequeno
+              <span class="annot">
+                <span class="note-tag">nota ativa ↓</span><span class="grifo">briefing</span></span>.
+              Quando o resultado vem errado, quase sempre falta uma das cinco peças que o modelo precisa para decidir o que fazer.
+            </p>
+            <p>
+              Pense como quem entrega um trabalho para outra pessoa: você diz o <b>contexto</b>, descreve a <b>tarefa</b>, combina o <b>formato</b>, mostra <b>exemplos</b> e ajusta na <b>iteração</b>. Tire uma peça e o resultado escorrega. Abaixo, a anatomia completa — guarde-a como mapa para todas as próximas seções.
+            </p>
+          </div>
+
+          <!-- NOTA DO ALUNO na margem, ancorada ao grifo -->
+          <aside class="margin-note">
+            <div class="mn-anchor">↳ ancorada em “briefing”</div>
+            <div class="mn-text">“revisar isso depois”</div>
+            <div class="mn-meta">
+              <span>VOCÊ · HÁ 2 MIN</span>
+              <span class="edit">editar</span>
+            </div>
+          </aside>
+
+          <!-- DIAGRAMA SVG das 5 peças -->
+          <figure class="diagram">
+            <div class="diagram-head">
+              <h3>As 5 peças de um prompt</h3>
+              <span class="tag">Anatomia</span>
+            </div>
+            <div class="diagram-canvas">
+              <svg viewBox="0 0 980 220" width="100%" role="img" aria-label="Diagrama das cinco peças de um prompt: Contexto, Tarefa, Formato, Exemplos, Iteração">
+                <defs>
+                  <style>
+                    .cell{ fill:#f3e9d8; stroke:#2a0f24; stroke-width:3; }
+                    .cell-accent{ fill:#ff5a36; stroke:#2a0f24; stroke-width:3; }
+                    .nidx{ font-family:'Archivo Black', sans-serif; font-size:34px; fill:#2a0f24; }
+                    .nidx-on{ fill:#2a0f24; }
+                    .ntit{ font-family:'Archivo Black', sans-serif; font-size:21px; fill:#25101f; letter-spacing:-.5px; }
+                    .ndesc{ font-family:'Archivo', sans-serif; font-size:12.5px; fill:#4a2b41; }
+                    .arrow{ stroke:#ff5a36; stroke-width:4; fill:none; }
+                    .arrowhead{ fill:#ff5a36; }
+                    .loop{ stroke:#d8401f; stroke-width:3; fill:none; stroke-dasharray:7 6; }
+                  </style>
+                  <marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M0,0 L10,5 L0,10 z" class="arrowhead"/>
+                  </marker>
+                </defs>
+
+                <!-- 4 caixas em fluxo -->
+                <!-- Contexto -->
+                <g>
+                  <rect class="cell" x="6"   y="40" width="206" height="92"/>
+                  <text class="nidx" x="20" y="74">1</text>
+                  <text class="ntit" x="20" y="104">Contexto</text>
+                  <text class="ndesc" x="20" y="124">quem fala, para quem, situação</text>
+                </g>
+                <!-- Tarefa -->
+                <g>
+                  <rect class="cell" x="254" y="40" width="206" height="92"/>
+                  <text class="nidx" x="268" y="74">2</text>
+                  <text class="ntit" x="268" y="104">Tarefa</text>
+                  <text class="ndesc" x="268" y="124">o pedido único, claro</text>
+                </g>
+                <!-- Formato -->
+                <g>
+                  <rect class="cell" x="502" y="40" width="206" height="92"/>
+                  <text class="nidx" x="516" y="74">3</text>
+                  <text class="ntit" x="516" y="104">Formato</text>
+                  <text class="ndesc" x="516" y="124">como a resposta deve sair</text>
+                </g>
+                <!-- Exemplos -->
+                <g>
+                  <rect class="cell" x="750" y="40" width="220" height="92"/>
+                  <text class="nidx" x="764" y="74">4</text>
+                  <text class="ntit" x="764" y="104">Exemplos</text>
+                  <text class="ndesc" x="764" y="124">poucos, bem escolhidos</text>
+                </g>
+
+                <!-- setas entre 1-2-3-4 -->
+                <line class="arrow" x1="212" y1="86" x2="252" y2="86" marker-end="url(#ah)"/>
+                <line class="arrow" x1="460" y1="86" x2="500" y2="86" marker-end="url(#ah)"/>
+                <line class="arrow" x1="708" y1="86" x2="748" y2="86" marker-end="url(#ah)"/>
+
+                <!-- Iteração: caixa-acento embaixo, loop fechando o ciclo -->
+                <g>
+                  <rect class="cell-accent" x="378" y="166" width="224" height="46"/>
+                  <text class="nidx nidx-on" x="392" y="200">5</text>
+                  <text class="ntit" x="430" y="196">Iteração — releia &amp; ajuste</text>
+                </g>
+                <!-- loop tracejado da iteração de volta ao começo -->
+                <path class="loop" d="M860,132 C860,180 700,189 602,189" marker-end="url(#ah)"/>
+                <path class="loop" d="M378,189 C200,189 109,180 109,132" marker-end="url(#ah)"/>
+              </svg>
+            </div>
+            <div class="diagram-legend">
+              <span><b>→</b> fluxo de montagem do prompt</span>
+              <span><b>⤺</b> a iteração reentra no ciclo: leia a saída, corrija a peça que faltou.</span>
+            </div>
+          </figure>
+
+          <!-- ENTRADA: MINHA JORNADA -->
+          <section class="journey">
+            <div class="j-num">
+              <span class="lbl">Jornada</span>
+              <span class="big">21%</span>
+            </div>
+            <div class="j-mid">
+              <h3>Sua jornada, consolidada</h3>
+              <p>1 de 7 seções deste módulo · Módulo 3 de 7 na Trilha 1. Seus grifos, notas e dúvidas ficam reunidos aqui — retome de onde parou.</p>
+              <div class="chips">
+                <span class="chip lido">3 lidas</span>
+                <span class="chip">4 a ler</span>
+                <span class="chip duvida">1 dúvida aberta</span>
+                <span class="chip">1 nota</span>
+              </div>
+            </div>
+            <div class="j-cta">
+              <a class="btn" href="#"><span class="kbd-check">→</span> Abrir minha jornada</a>
+            </div>
+          </section>
+
+          <!-- NAV seção -->
+          <div class="reader-foot" style="grid-column:1 / -1;">
+            <a class="navbtn prev disabled" href="#"><span class="dir">← Anterior</span><span class="ttl">Introdução</span></a>
+            <a class="navbtn next" href="#"><span class="dir">Próxima · Seção 2 →</span><span class="ttl">Defina o papel e o contexto</span></a>
+          </div>
+
+        </div><!-- /reader-body -->
+      </div><!-- /reader-inner -->
+    </main>
+  </div><!-- /layout -->
+
+  <footer class="footer">
+    <span class="word">INEMA<span class="dot">.</span>CLUB</span>
+    <span>Engenharia de Prompts · Módulo 1.1 · Seção 1 de 7</span>
+  </footer>
+</div>
+
+<script>
+  function toggleLido(){
+    var b=document.getElementById('btnLido');
+    var t=document.getElementById('lidoTxt');
+    var on=b.getAttribute('aria-pressed')==='true';
+    b.setAttribute('aria-pressed', String(!on));
+    t.textContent = on ? 'Marcar como lido' : 'Lido ✓';
+    // espelha no item atual do sumário
+    var cur=document.querySelector('.toc-item.current .toc-txt');
+    if(cur && !on){ cur.style.textDecoration='line-through'; cur.style.textDecorationColor='var(--plum)'; }
+    else if(cur){ cur.style.textDecoration='none'; }
+  }
+  function toggleDuvida(b){
+    var on=b.classList.toggle('active');
+    if(on){ b.style.background='var(--plum)'; b.style.color='var(--cream)'; b.innerHTML='<span class="kbd-check">!</span> Dúvida registrada'; }
+    else { b.style.background='var(--accent)'; b.style.color='var(--plum)'; b.innerHTML='<span class="kbd-check">?</span> Tenho dúvida'; }
+  }
+</script>
+</body>
+</html>
