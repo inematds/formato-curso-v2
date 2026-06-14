@@ -1,0 +1,1174 @@
+/* =============================================================================
+   INEMA · formato-curso-v3 · learn.css
+   SIMPLICIDADE RADICAL + CONTEUDO PROFUNDO — reading-mode como DEFAULT.
+
+   Formaliza o prototipo mockups/v3-prototipo.html e implementa o V3-DESIGN.md.
+   Papel quente (nunca #fff/#000), par serif display+corpo (Spectral + Source
+   Serif 4), UM acento de tinta (#2C5282, azul-ardosia) reservado a ESTADO e
+   figura — nunca decoracao. Profundidade por CAMADAS sob demanda: sidenotes na
+   margem (CSS puro, colapsam inline no mobile), <details class="go-deeper">,
+   definicao inline. Progresso = marcador fino "N de M" + 1 linha discreta
+   (.progress-line), NUNCA 3 barras. Notas/duvidas vivem na margem.
+
+   --------------------------------------------------------------------------
+   CONTRATO CSS x JS (learn.js) — os nomes DEVEM casar:
+     - Layout:   .reading (coluna 62-70ch) + .margin-rail (trilho direito)
+     - Secao:    <section data-inema-topic data-inema-module data-inema-track>
+     - Sidenote: <aside class="sidenote" data-kind="definicao|fonte|fundo">
+                 ancorada por <a class="sidenote-ref">; colapso mobile sem JS.
+     - Painel do aluno: <aside data-inema-rail="modulo-X-Y#topico-N"> (o learn.js
+                 injeta read-toggle/doubt-toggle/lista de grifos AQUI).
+     - Lido:     [data-inema-read-toggle][aria-pressed]
+     - Duvida:   [data-inema-doubt-toggle][aria-pressed]
+     - Grifo:    <mark class="hl" data-hl="..."> (+ popover de selecao)
+     - Bloco:    [data-inema-block]
+     - Progresso: [data-inema-meter="curso|trilha:N|modulo:X-Y"] + .progress-line
+     - Jornada:  [data-inema-journey-open] + painel .journey
+     - Fundo:    <details class="go-deeper">
+   --------------------------------------------------------------------------
+   TOKENS SEMANTICOS (nivel que a pagina consome):
+     --bg --surface --text --text-muted --border --accent
+   TEMAS via [data-theme] no <html>: papel (default) · sepia · escuro.
+   PREFS via atributos no <html>:
+     data-font (serif|sans|hyperlegible) · data-line-width · data-leading ·
+     data-fontscale (em %).
+   ============================================================================= */
+
+
+/* =============================================================================
+   1. TEMAS — tokens semanticos por [data-theme]
+   Cor em OKLCH (perceptual). NADA de #fff/#000 puros: papel quente + tinta
+   off-black (#1A1A1A). Acento UNICO fixo = #2C5282 (azul-ardosia), so girado em
+   luminancia entre temas para manter contraste AA+. (--accent-soft = hover.)
+   ============================================================================= */
+
+/* ---- PAPEL (default) — papel quente #F7F4EF · texto off-black #1A1A1A ---- */
+:root,
+html[data-theme="papel"] {
+  color-scheme: light;
+
+  /* === Nivel 3 — SEMANTICOS (a pagina consome SO estes) === */
+  --bg:           oklch(0.971 0.012 86);   /* ~#F7F4EF  papel quente, NUNCA branco */
+  --surface:      oklch(0.985 0.010 86);   /* ~#FAF6EC  superficie levemente elevada */
+  --surface-2:    oklch(0.962 0.012 88);   /* ~#EFE8DA  gutter da margem / bloco raso */
+  --surface-deep: oklch(0.935 0.014 86);   /* ~#ECE5D6  filete de papel (nao glow) */
+  --text:         oklch(0.255 0.012 70);   /* ~#1A1A1A  off-black quente, NUNCA #000 */
+  --text-muted:   oklch(0.455 0.012 70);   /* ~#5B5347  secundario (AA sobre bg) */
+  --text-faint:   oklch(0.610 0.013 75);   /* ~#8A8073  metadados, rotulos, "N de M" */
+  --border:       oklch(0.855 0.012 82);   /* ~#E0DACE  hairline 1px */
+  --border-soft:  oklch(0.900 0.011 84);   /* ~#E8E2D4  regra ainda mais leve */
+
+  /* ACENTO UNICO E FUNCIONAL = #2C5282 (azul-ardosia). So estado/figura/link. */
+  --accent:       oklch(0.430 0.078 252);  /* ~#2C5282  azul-ardosia */
+  --accent-soft:  oklch(0.500 0.072 254);  /* ~#3A6396  hover / 2o nivel */
+  --accent-wash:  oklch(0.945 0.012 250);  /* fundo de bloco do acento — raro */
+  --on-accent:    oklch(0.985 0.010 86);   /* texto sobre fill de acento (papel) */
+
+  /* estados raros e semanticos */
+  --mark:         oklch(0.500 0.110 28);   /* ~#7A2230  oxblood: duvida/nota do aluno */
+  --mark-soft:    oklch(0.600 0.105 30);
+  --highlight:    oklch(0.905 0.105 100);  /* ~#F0E08C  marca-texto sobre 1 termo */
+  --highlight-edge: oklch(0.835 0.110 100);
+  --ok:           oklch(0.520 0.110 150);  /* acerto (verde sobrio) */
+  --warn:         oklch(0.520 0.140 28);   /* alerta */
+}
+
+/* ---- SEPIA (claro morno) ---- */
+html[data-theme="sepia"] {
+  color-scheme: light;
+
+  --bg:           oklch(0.945 0.030 75);   /* ~#EFE2CC */
+  --surface:      oklch(0.960 0.028 75);
+  --surface-2:    oklch(0.930 0.030 76);
+  --surface-deep: oklch(0.900 0.032 74);
+  --text:         oklch(0.290 0.020 60);   /* ~#352A1D */
+  --text-muted:   oklch(0.460 0.022 62);
+  --text-faint:   oklch(0.600 0.024 66);
+  --border:       oklch(0.830 0.030 72);
+  --border-soft:  oklch(0.880 0.028 73);
+
+  --accent:       oklch(0.420 0.074 250);
+  --accent-soft:  oklch(0.490 0.070 252);
+  --accent-wash:  oklch(0.910 0.028 72);
+  --on-accent:    oklch(0.960 0.028 75);
+
+  --mark:         oklch(0.470 0.110 28);
+  --mark-soft:    oklch(0.560 0.105 30);
+  --highlight:    oklch(0.880 0.110 98);
+  --highlight-edge: oklch(0.810 0.112 98);
+  --ok:           oklch(0.500 0.105 150);
+  --warn:         oklch(0.500 0.140 28);
+}
+
+/* ---- ESCURO (calmo, sem ambar, off-white quente, zero glow) ----
+   NAO e a base — e so mais um tema. Off-white quente, NUNCA #fff. */
+html[data-theme="escuro"] {
+  color-scheme: dark;
+
+  --bg:           oklch(0.245 0.010 70);   /* ~#211F1C grafite quente */
+  --surface:      oklch(0.285 0.010 70);   /* ~#2A2724 */
+  --surface-2:    oklch(0.225 0.010 70);
+  --surface-deep: oklch(0.205 0.010 70);
+  --text:         oklch(0.900 0.008 80);   /* ~#E6E2DA off-white quente, NUNCA #fff */
+  --text-muted:   oklch(0.730 0.010 80);
+  --text-faint:   oklch(0.580 0.012 78);
+  --border:       oklch(0.380 0.010 74);
+  --border-soft:  oklch(0.330 0.010 74);
+
+  --accent:       oklch(0.720 0.090 250);  /* azul claro, contraste rebaixado, zero glow */
+  --accent-soft:  oklch(0.660 0.092 252);
+  --accent-wash:  oklch(0.300 0.020 252);
+  --on-accent:    oklch(0.245 0.010 70);
+
+  --mark:         oklch(0.700 0.090 30);
+  --mark-soft:    oklch(0.640 0.092 30);
+  --highlight:    oklch(0.500 0.090 100);
+  --highlight-edge: oklch(0.560 0.092 100);
+  --ok:           oklch(0.700 0.100 150);
+  --warn:         oklch(0.660 0.130 28);
+}
+
+
+/* =============================================================================
+   2. TIPOGRAFIA + ESPACO + PREFS (data-font/-line-width/-leading/-fontscale)
+   ============================================================================= */
+
+:root {
+  --serif-disp: "Spectral", Georgia, "Times New Roman", serif;        /* display */
+  --serif-body: "Source Serif 4", Georgia, "Times New Roman", serif;  /* corpo  */
+  --mono:       "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --hyperleg:   "Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
+  --sans:       ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* familias ATIVAS (sobrescritas por data-font) */
+  --font-disp:  var(--serif-disp);
+  --font-body:  var(--serif-body);
+
+  /* medida (62-70ch) — a restricao que LIBERA a margem */
+  --measure: 66ch;
+  /* entrelinha: multiplicador SEM unidade (sobrevive a override 1.4.12) */
+  --leading: 1.66;            /* 1.62-1.70 */
+  /* corpo relativo ao root (escala junto com data-fontscale) */
+  --size-body: clamp(1.06rem, 0.62rem + 0.72vw, 1.18rem);  /* ~18-19px */
+
+  /* largura do trilho de margem */
+  --rail-w: clamp(220px, 26vw, 320px);
+  --rail-gap: 54px;
+  --shell-max: 1180px;
+  --shell-pad: 40px;
+
+  /* espaco base 8px */
+  --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px; --s5: 24px;
+  --s6: 32px; --s7: 48px; --s8: 64px; --s9: 96px;
+
+  --radius: 4px;             /* editorial, quase reto */
+  --radius-sm: 3px;
+
+  /* chassi (timing) */
+  --dur-fast: 120ms;
+  --dur: 220ms;
+  --dur-slow: 360ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* altura do chrome sticky (offset de ancora) */
+  --reader-h: 3.4rem;
+}
+
+/* fontscale em % no root: TODO rem escala junto (NUNCA px no root) */
+html { font-size: var(--fontscale, 100%); }
+html[data-fontscale] { font-size: var(--fontscale, 100%); }
+/* o JS escreve --fontscale; degraus diretos como fallback se vier so o atributo */
+html[data-fontscale="90"]  { --fontscale: 90%; }
+html[data-fontscale="100"] { --fontscale: 100%; }
+html[data-fontscale="112"] { --fontscale: 112%; }
+html[data-fontscale="125"] { --fontscale: 125%; }
+
+/* data-font: serif (default) · sans · hyperlegible (Atkinson) */
+html[data-font="serif"]        { --font-disp: var(--serif-disp); --font-body: var(--serif-body); }
+html[data-font="sans"]         { --font-disp: var(--sans);       --font-body: var(--sans); }
+html[data-font="hyperlegible"] { --font-disp: var(--hyperleg);   --font-body: var(--hyperleg); --leading: 1.72; }
+
+/* data-line-width (ch): mira 62-70ch; aceita slugs ou numeros */
+html[data-line-width="estreito"] , html[data-line-width="62"] { --measure: 62ch; }
+html[data-line-width="medio"]    , html[data-line-width="66"] { --measure: 66ch; }
+html[data-line-width="largo"]    , html[data-line-width="70"] { --measure: 70ch; }
+
+/* data-leading: compacto | confortavel (dentro de 1.62-1.70) */
+html[data-leading="compacto"]    { --leading: 1.62; }
+html[data-leading="confortavel"] { --leading: 1.70; }
+
+
+/* =============================================================================
+   3. BASE
+   ============================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--size-body);
+  line-height: var(--leading);
+  font-optical-sizing: auto;
+}
+
+/* fibra de papel sutil (papel, NAO material). Removida no escuro. */
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: 0.45; mix-blend-mode: multiply;
+  background-image:
+    repeating-linear-gradient(92deg, oklch(0.255 0.012 70 / 0.012) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(2deg,  oklch(0.255 0.012 70 / 0.008) 0 1px, transparent 1px 5px);
+}
+html[data-theme="escuro"] body::before { opacity: 0; }
+
+::selection { background: var(--highlight); color: var(--text); }
+html[data-theme="escuro"] ::selection { background: var(--accent); color: var(--on-accent); }
+
+/* scroll-margin em TODO alvo de ancora (nav sticky obscurece foco — WCAG 2.4.11) */
+:where([id]),
+:where([data-inema-topic]),
+:where([data-inema-block]),
+:where([data-inema-module]) { scroll-margin-top: calc(var(--reader-h) + var(--s5)); }
+
+/* links: sublinhado discreto que basta; NAO muda de cor no hover (so o filete) */
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+a:hover { text-decoration-color: var(--accent); }
+
+/* FOCO VISIVEL: outline com o ACENTO, offset 2px (sobrio, acessivel) */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+:focus:not(:focus-visible) { outline: none; }
+
+img, svg { max-width: 100%; }
+
+.skip {
+  position: absolute; left: var(--s3); top: -3rem; z-index: 100;
+  padding: var(--s2) var(--s4); background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  text-decoration: none; transition: top var(--dur) var(--ease);
+}
+.skip:focus { top: var(--s3); }
+
+
+/* =============================================================================
+   4. READER BAR — controles minimos (tema, fonte, tamanho, medida)
+   Hairline inferior + leve backdrop no papel. Sem blur pesado, sem dark glass.
+   ============================================================================= */
+
+.reader-bar {
+  position: sticky; top: 0; z-index: 6;
+  background: color-mix(in oklch, var(--bg) 88%, transparent);
+  -webkit-backdrop-filter: saturate(108%) blur(3px);
+  backdrop-filter: saturate(108%) blur(3px);
+  border-bottom: 1px solid var(--border);
+}
+.reader-inner {
+  max-width: var(--shell-max); margin: 0 auto;
+  padding: 0.55rem var(--shell-pad);
+  min-height: var(--reader-h);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s5);
+}
+.wordmark {
+  font-family: var(--font-disp); font-weight: 600; font-size: 18px;
+  letter-spacing: 0.14em; color: var(--text);
+  display: flex; align-items: baseline; gap: 0.4ch; text-decoration: none;
+}
+.wordmark .dot  { color: var(--accent); }
+.wordmark .club { color: var(--text-faint); font-weight: 400; letter-spacing: 0.2em; }
+
+.reader-controls { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
+
+/* grupo segmentado de botoes (tema / fonte / tamanho / medida) */
+.rc-group {
+  display: flex; border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.rc-btn {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+  background: transparent; color: var(--text-muted); border: 0;
+  border-right: 1px solid var(--border);
+  padding: 6px 11px; cursor: pointer; line-height: 1;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.rc-group .rc-btn:last-child { border-right: 0; }
+.rc-btn:hover { background: var(--surface-2); color: var(--text); }
+.rc-btn[aria-pressed="true"], .rc-btn.is-active {
+  background: var(--accent); color: var(--on-accent);
+}
+.rc-read {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-faint); white-space: nowrap;
+}
+
+
+/* =============================================================================
+   5. MASTHEAD + WAYFINDING — "onde estou" calmo (sem 3 barras)
+   ============================================================================= */
+
+.masthead {
+  position: relative; z-index: 2; max-width: var(--shell-max);
+  margin: 0 auto; padding: var(--s7) var(--shell-pad) 0;
+}
+.wayfind {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-faint);
+  display: flex; flex-wrap: wrap; gap: var(--s4) var(--s5);
+  align-items: baseline; margin-bottom: var(--s5);
+}
+.wayfind .sep { color: var(--border); }
+.wayfind b { color: var(--accent); font-weight: 500; }
+
+/* grade silenciosa de percurso (estilo mastery do Khan) — NUNCA barra */
+.mastery { display: inline-flex; gap: 3px; align-items: center; }
+.mastery i {
+  width: 9px; height: 9px; border: 1px solid var(--border);
+  background: var(--surface-2); border-radius: 1px; display: inline-block;
+}
+.mastery i.read { background: var(--accent); border-color: var(--accent); }
+.mastery i.cur  {
+  border-color: var(--accent); background: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--bg);
+}
+
+
+/* =============================================================================
+   6. SPREAD — coluna de leitura .reading + trilho .margin-rail
+   A largura restrita da coluna CRIA o trilho. Mobile: o trilho desmonta.
+   ============================================================================= */
+
+.spread {
+  position: relative; z-index: 1; max-width: var(--shell-max);
+  margin: 0 auto; padding: 0 var(--shell-pad) var(--s9);
+}
+.leaf {
+  display: grid;
+  grid-template-columns: minmax(0, var(--measure)) var(--rail-w);
+  column-gap: var(--rail-gap);
+  padding-top: var(--s6);
+}
+
+/* coluna de leitura central */
+.reading { position: relative; min-width: 0; }
+
+/* trilho de margem a direita */
+.margin-rail { position: relative; }
+.margin-rail::before {
+  content: ""; position: absolute; left: calc(-1 * var(--rail-gap) / 2);
+  top: 6px; bottom: 0; width: 1px;
+  background: linear-gradient(180deg, var(--border), transparent 96%);
+}
+
+
+/* =============================================================================
+   7. ABERTURA DO MODULO (kicker · titulo · deck · objetivos · sumario)
+   ============================================================================= */
+
+.kicker {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--accent);
+  display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s4);
+}
+.kicker::after {
+  content: ""; flex: 1 1 auto; height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+
+.module-title, h1.module {
+  font-family: var(--font-disp); font-weight: 500;
+  font-size: clamp(2.0rem, 1.2rem + 2.4vw, 3.0rem); line-height: 1.06;
+  letter-spacing: -0.015em; margin: 0 0 var(--s4); color: var(--text);
+}
+.module-title em, h1.module em { font-style: italic; font-weight: 400; color: var(--accent); }
+
+.deck {
+  font-family: var(--font-body); font-style: italic;
+  font-size: 1.18rem; line-height: 1.55; color: var(--text-muted);
+  max-width: 60ch; margin: 0 0 var(--s5);
+}
+.read-meta {
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.04em;
+  color: var(--text-faint); display: flex; gap: var(--s4); flex-wrap: wrap;
+  padding-bottom: var(--s5); margin-bottom: var(--s6);
+  border-bottom: 1px solid var(--border);
+}
+.read-meta .here { color: var(--accent); }
+
+/* objetivos do modulo — "o que voce vai entender" (1a camada) */
+.aims { margin: 0 0 var(--s7); }
+.aims h2 {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--text-faint); margin: 0 0 var(--s3);
+}
+.aims ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s2); }
+.aims li {
+  display: flex; gap: var(--s3); align-items: baseline;
+  font-size: 1.02rem; color: var(--text-muted); line-height: 1.5;
+}
+.aims li::before {
+  content: ""; flex: 0 0 auto; width: 7px; height: 7px; margin-top: 0.5em;
+  border: 1px solid var(--accent); border-radius: 1px; transform: rotate(45deg);
+}
+.aims li b { color: var(--text); font-weight: 600; font-family: var(--font-disp); }
+
+/* sumario (indice impresso) */
+.toc {
+  margin: 0 0 var(--s8); padding: var(--s5) var(--s5) var(--s4);
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.toc-head {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--text-faint);
+  margin: 0 0 var(--s4); padding-bottom: var(--s3); border-bottom: 1px solid var(--border);
+}
+.toc ol { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 38px; }
+.toc li {
+  break-inside: avoid; display: flex; align-items: baseline; gap: var(--s2);
+  padding: 6px 0; font-size: 0.97rem; color: var(--text-muted); line-height: 1.4;
+}
+.toc li .n {
+  font-family: var(--mono); font-size: 0.78rem; color: var(--text-faint);
+  flex: 0 0 auto; width: 1.4em; text-align: right;
+}
+.toc li .t { flex: 1 1 auto; }
+.toc li .leader {
+  flex: 1 1 auto; align-self: flex-end; border-bottom: 1px dotted var(--border);
+  transform: translateY(-4px); min-width: 8px;
+}
+.toc li a { text-decoration: none; color: inherit; }
+.toc li.done .t  { color: var(--text-faint); }
+.toc li.done .mk { color: var(--accent); font-size: 0.78rem; }
+.toc li.current .n { color: var(--accent); font-weight: 500; }
+.toc li.current .t { font-weight: 600; font-family: var(--font-disp); color: var(--text); }
+.toc li .dot-now {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+  align-self: center; flex: 0 0 auto;
+}
+/* item ativo do scrollspy no TOC (JS marca .is-active / aria-current) */
+.toc li a.is-active, .toc li a[aria-current="true"] { color: var(--accent); font-weight: 600; }
+.toc li a[data-read="true"]::before { content: "✓ "; color: var(--accent); }
+
+
+/* =============================================================================
+   8. SECTION — uma ideia por tela; cada secao RESPIRA (~96px)
+   <section data-inema-topic data-inema-module data-inema-track>
+   ============================================================================= */
+
+.section, section[data-inema-topic] { scroll-margin-top: calc(var(--reader-h) + var(--s5)); }
+.section + .section,
+section[data-inema-topic] + section[data-inema-topic] { margin-top: var(--s9); }
+
+.section-mark {
+  display: flex; align-items: baseline; gap: var(--s3); margin: 0 0 var(--s2);
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--text-faint);
+}
+.section-mark .where { color: var(--accent); }
+
+h2.head {
+  font-family: var(--font-disp); font-weight: 500;
+  font-size: clamp(1.5rem, 1.1rem + 1.2vw, 1.95rem); line-height: 1.14;
+  letter-spacing: -0.01em; margin: 0 0 var(--s2); color: var(--text);
+}
+h2.head .num { font-style: italic; font-weight: 400; color: var(--accent); margin-right: 0.3ch; }
+
+/* h3 subtitulo descritivo — 1a camada de leitura (layer-cake) */
+h3.sub {
+  font-family: var(--font-disp); font-weight: 600; font-size: 1.22rem;
+  line-height: 1.3; color: var(--text); margin: var(--s7) 0 var(--s3);
+  letter-spacing: -0.005em;
+}
+
+
+/* =============================================================================
+   9. PROSE — corpo de leitura. Enfase UNICA (italico OU bold, nunca ambos).
+   ============================================================================= */
+
+.prose p { margin: 0 0 var(--s5); max-width: var(--measure); }
+.prose p.lede { font-size: 1.04em; }
+.prose ul, .prose ol { max-width: var(--measure); margin: 0 0 var(--s5); padding-left: 1.4em; }
+.prose li { margin: 0 0 var(--s2); }
+.prose em { font-style: italic; }
+.prose strong { font-weight: 600; }
+.prose blockquote {
+  margin: var(--s6) 0; padding-left: var(--s4); max-width: var(--measure);
+  border-left: 2px solid var(--border); color: var(--text-muted);
+  font-style: italic;
+}
+
+/* dropcap editorial (acento, no inicio do modulo) */
+.dropcap::first-letter {
+  font-family: var(--font-disp); font-weight: 600; float: left;
+  font-size: 5.0em; line-height: 0.78; padding: 0.06em 0.12em 0 0;
+  margin: 0.02em 0 -0.04em 0; color: var(--accent);
+}
+
+/* codigo inline + bloco */
+.prose code, .go-deeper code {
+  font-family: var(--mono); font-size: 0.86em; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 0.05em 0.35em; color: var(--accent);
+}
+.codeblock {
+  font-family: var(--mono); font-size: 0.82em; line-height: 1.65;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: var(--s4); margin: var(--s3) 0 var(--s4); color: var(--text);
+  white-space: pre-wrap; overflow-x: auto;
+}
+.codeblock .c { color: var(--text-faint); }   /* comentario */
+.codeblock .k { color: var(--accent); }        /* chave */
+
+
+/* =============================================================================
+   10. DEFINICAO INLINE — glossario sob demanda (CSS puro, <details>)
+   <details class="dfn"><summary>termo</summary><span class="body">…</span></details>
+   ============================================================================= */
+
+.dfn { display: inline; }
+.dfn > summary {
+  display: inline; list-style: none; cursor: help;
+  border-bottom: 1px dotted var(--accent); color: var(--text);
+}
+.dfn > summary::-webkit-details-marker { display: none; }
+.dfn > summary::after {
+  content: "●"; font-size: 0.5em; vertical-align: super; color: var(--accent); margin-left: 1px;
+}
+.dfn[open] > summary::after { content: "○"; }
+.dfn .body {
+  display: block; margin: var(--s2) 0 var(--s3);
+  padding: var(--s3) var(--s4); background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 0.92em; line-height: 1.5; color: var(--text-muted); max-width: var(--measure);
+}
+.dfn .body b { font-family: var(--font-disp); color: var(--text); }
+
+
+/* =============================================================================
+   11. SIDENOTE-REF (ancora inline) + GRIFOS DO ALUNO (mark.hl[data-hl])
+   ============================================================================= */
+
+/* referencia inline da sidenote: numero/marcador discreto que ancora a margem */
+.sidenote-ref {
+  font-family: var(--mono); font-size: 0.62em; vertical-align: super;
+  color: var(--accent); text-decoration: none; margin-left: 1px;
+  font-style: normal; cursor: pointer;
+}
+.sidenote-ref::before { content: "["; }
+.sidenote-ref::after  { content: "]"; }
+.sidenote-ref:hover { color: var(--accent-soft); }
+
+/* termo grifado base (marca-texto editorial sobre UM termo, nunca paragrafos) */
+.grif {
+  position: relative; cursor: help; font-style: italic; color: var(--text);
+  padding: 0.02em 0.1em;
+  background: linear-gradient(180deg, transparent 10%, var(--highlight) 10% 84%, transparent 84%);
+  box-shadow: inset 0 0 0 0.5px var(--highlight-edge);
+}
+html[data-theme="escuro"] .grif {
+  background: linear-gradient(180deg, transparent 10%,
+    color-mix(in oklch, var(--highlight) 55%, transparent) 10% 84%, transparent 84%);
+}
+.grif sup {
+  font-family: var(--mono); font-size: 0.55em; color: var(--mark);
+  vertical-align: super; margin-left: 1px; font-style: normal;
+}
+
+/* GRIFO DINAMICO DO ALUNO — <mark class="hl" data-hl="..."> (criado pelo learn.js)
+   alpha sobre o texto p/ nao derrubar o contraste do glifo. */
+mark.hl, .hl {
+  background: transparent; color: inherit;
+  border-radius: 0.18em; padding: 0.02em 0.06em;
+  box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  cursor: pointer;
+}
+mark.hl[data-hl="amarelo"], mark.hl[data-hl="yellow"] { background: oklch(0.905 0.105 100 / 0.42); }
+mark.hl[data-hl="verde"],   mark.hl[data-hl="green"]  { background: oklch(0.620 0.110 150 / 0.26); }
+mark.hl[data-hl="azul"],    mark.hl[data-hl="blue"]   { background: oklch(0.620 0.090 250 / 0.24); }
+mark.hl[data-hl="rosa"],    mark.hl[data-hl="pink"]   { background: oklch(0.640 0.110 360 / 0.24); }
+/* duvida: oxblood + filete inferior (leitura nao-so-por-cor — WCAG 1.4.1) */
+mark.hl[data-hl="duvida"],  mark.hl[data-hl="doubt"] {
+  background: oklch(0.560 0.105 30 / 0.20);
+  border-bottom: 2px solid oklch(0.560 0.105 30 / 0.7);
+}
+html[data-theme="escuro"] mark.hl[data-hl="amarelo"],
+html[data-theme="escuro"] mark.hl[data-hl="yellow"] { background: oklch(0.905 0.090 100 / 0.30); }
+
+/* nota anexa ao grifo: pip discreto depois do span (NAO seta perto de topico) */
+mark.hl[data-has-note="true"]::after,
+mark.hl[data-inema-hasnote="1"]::after {
+  content: ""; display: inline-block; width: 0.42em; height: 0.42em;
+  margin-inline-start: 0.15em; border-radius: 50%; background: var(--accent);
+  vertical-align: super; font-size: 0.7em;
+}
+
+
+/* =============================================================================
+   12. "PARE E PREVEJA" — recall ativo embutido, calmo
+   ============================================================================= */
+
+.predict {
+  margin: var(--s6) 0; padding: var(--s4) var(--s5);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 1px 0 var(--surface-deep); max-width: var(--measure);
+}
+.predict .lbl {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: var(--s2);
+}
+.predict p { margin: 0; font-style: italic; color: var(--text-muted); }
+.predict details { margin-top: var(--s3); }
+.predict summary {
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em;
+  color: var(--text-faint); cursor: pointer; list-style: none;
+}
+.predict summary::-webkit-details-marker { display: none; }
+.predict summary::before { content: "▸ "; color: var(--accent); }
+.predict details[open] summary::before { content: "▾ "; }
+.predict .answer { margin-top: var(--s3); font-style: normal; color: var(--text); }
+
+
+/* =============================================================================
+   13. FIGURE — uma figura por ideia. SVG herda as cores do tema via classes.
+   ============================================================================= */
+
+.figure { margin: var(--s7) 0 var(--s6); max-width: var(--measure); }
+.figure figcaption {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-faint);
+  margin-bottom: var(--s4); padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: var(--s3); align-items: baseline;
+}
+.figure figcaption b { color: var(--accent); font-weight: 500; }
+.figure figcaption .fig-n { font-family: var(--font-disp); font-style: italic; color: var(--text); }
+
+.diagram {
+  width: 100%; height: auto; display: block;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+/* hooks de cor para os SVG (uma classe por papel) */
+.diagram .ink           { fill: var(--text); }
+.diagram .ink-soft      { fill: var(--text-muted); }
+.diagram .faint         { fill: var(--text-faint); }
+.diagram .accent        { fill: var(--accent); }
+.diagram .accent-stroke { stroke: var(--accent); }
+.diagram .rule-stroke   { stroke: var(--border); }
+.diagram .mark-stroke   { stroke: var(--mark); }
+.diagram .mark-fill     { fill: var(--mark); }
+.diagram .wash          { fill: var(--surface-2); }
+
+
+/* =============================================================================
+   14. "INDO MAIS FUNDO (opcional)" — <details class="go-deeper">
+   ============================================================================= */
+
+.go-deeper {
+  margin: var(--s6) 0; max-width: var(--measure);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface);
+}
+.go-deeper > summary {
+  list-style: none; cursor: pointer; padding: var(--s4) var(--s5);
+  display: flex; align-items: center; gap: var(--s3);
+  font-family: var(--font-disp); font-weight: 500; font-size: 1.05rem; color: var(--text);
+}
+.go-deeper > summary::-webkit-details-marker { display: none; }
+.go-deeper > summary .chev,
+.go-deeper > summary::before {
+  font-family: var(--mono); color: var(--accent); flex: 0 0 auto;
+  transition: transform var(--dur) var(--ease);
+}
+/* fallback de chevron quando o markup nao traz <span class="chev"> */
+.go-deeper > summary:not(:has(.chev))::before { content: "▸"; }
+.go-deeper[open] > summary .chev,
+.go-deeper[open] > summary:not(:has(.chev))::before { transform: rotate(90deg); }
+.go-deeper > summary .opt {
+  margin-left: auto; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-faint); font-weight: 400;
+}
+.go-deeper .inner { padding: 0 var(--s5) var(--s5); border-top: 1px solid var(--border); }
+.go-deeper .inner > *:first-child { margin-top: var(--s4); }
+.go-deeper .inner p { margin: 0 0 var(--s4); color: var(--text-muted); font-size: 0.98em; }
+.go-deeper .inner p:last-child { margin-bottom: 0; }
+
+
+/* =============================================================================
+   15. MARGIN RAIL — SIDENOTES DE AUTOR (CSS puro)
+   <aside class="sidenote" data-kind="definicao|fonte|fundo"> ancorada por
+   .sidenote-ref. Desktop: na margem, mesma altura. Mobile: colapsa inline
+   abaixo do paragrafo (sem JS — ver bloco RESPONSIVO).
+   ============================================================================= */
+
+.sidenote {
+  font-size: 0.85rem; line-height: 1.45; color: var(--text-muted);
+  margin: 0 0 var(--s6);
+}
+.sidenote .tag {
+  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-faint);
+  display: flex; align-items: center; gap: 7px; margin-bottom: 7px;
+}
+/* o pip antes do rotulo, colorido por data-kind (degrada se o .tag faltar) */
+.sidenote .tag::before, .sidenote .pip {
+  content: ""; width: 6px; height: 6px; border-radius: 1px; flex: 0 0 auto;
+  display: inline-block; background: var(--text-muted);
+}
+.sidenote .tag::before { content: ""; }
+.sidenote[data-kind="definicao"] .tag::before, .sidenote .pip.def  { background: var(--accent); }
+.sidenote[data-kind="fonte"]     .tag::before, .sidenote .pip.src  { background: var(--text-muted); }
+.sidenote[data-kind="fundo"]     .tag::before, .sidenote .pip.more { background: var(--mark); }
+.sidenote b { font-family: var(--font-disp); color: var(--text); font-weight: 600; }
+.sidenote i { font-style: italic; }
+.sidenote .src-line {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--text-faint);
+  margin-top: 6px; letter-spacing: 0.02em;
+}
+/* destaque calmo quando a .sidenote-ref correspondente esta em foco/hover */
+.sidenote:target,
+.sidenote.is-active {
+  background: color-mix(in oklch, var(--accent) 6%, transparent);
+  border-radius: var(--radius);
+}
+
+
+/* =============================================================================
+   16. PAINEL DO ALUNO POR SECAO — <aside data-inema-rail="...">
+   O learn.js injeta AQUI: marcar lida, tenho duvida, lista de grifos/notas.
+   Aqui esta o estilo dos hooks que o JS cria/alterna.
+   ============================================================================= */
+
+[data-inema-rail] {
+  margin: 0 0 var(--s6); display: block;
+}
+
+/* nota DO ALUNO ancorada (oxblood, na margem) */
+.note-hand {
+  font-family: var(--font-disp); font-style: italic; font-size: 1.02rem;
+  line-height: 1.45; color: var(--mark); padding-left: var(--s3); position: relative;
+  margin: 0 0 var(--s6);
+}
+.note-hand::before {
+  content: ""; position: absolute; left: 0; top: 0.35em; bottom: 0.35em;
+  width: 2px; background: var(--mark-soft); opacity: 0.55;
+}
+.note-hand .meta {
+  display: block; font-family: var(--mono); font-style: normal;
+  font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-faint); margin-top: 8px;
+}
+.note-hand .tag {
+  font-family: var(--mono); font-style: normal; font-size: 0.62rem;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-faint);
+  display: flex; align-items: center; gap: 7px; margin-bottom: 7px;
+}
+
+/* bloco de controle (rotulo + marcar lida + duvida) */
+.control {
+  margin: 0 0 var(--s6); padding: var(--s3) var(--s4);
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.control .lbl {
+  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-faint); margin-bottom: var(--s3);
+}
+
+/* ---- MARCAR COMO LIDA — [data-inema-read-toggle] (aria-pressed) ----
+   #1 (erro critico): justify-content flex-start, NUNCA center. */
+.read-toggle,
+[data-inema-read-toggle] {
+  display: flex; align-items: center; justify-content: flex-start; gap: 11px;
+  width: 100%; text-align: left; cursor: pointer;
+  background: transparent; border: 0; padding: 0; margin: 0;
+  font-family: var(--font-body); color: var(--text-muted);
+}
+.read-box {
+  flex: 0 0 auto; width: 24px; height: 24px; position: relative;
+  border: 1.5px solid var(--text-muted); background: var(--bg); border-radius: var(--radius-sm);
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.read-box svg {
+  position: absolute; inset: 0; margin: auto; width: 15px; height: 15px;
+  stroke: var(--on-accent); stroke-width: 2.4; fill: none;
+  stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 24; stroke-dashoffset: 24;
+  transition: stroke-dashoffset var(--dur-slow) var(--ease) 0.05s;
+}
+.read-toggle[aria-pressed="true"] .read-box,
+[data-inema-read-toggle][aria-pressed="true"] .read-box,
+[data-inema-read-toggle].is-read .read-box {
+  background: var(--accent); border-color: var(--accent);
+}
+.read-toggle[aria-pressed="true"] .read-box svg,
+[data-inema-read-toggle][aria-pressed="true"] .read-box svg,
+[data-inema-read-toggle].is-read .read-box svg { stroke-dashoffset: 0; }
+
+.read-txt b {
+  font-weight: 600; display: block; font-family: var(--font-disp);
+  font-size: 1.0rem; color: var(--text);
+}
+.read-sub { font-size: 0.78rem; color: var(--text-faint); font-family: var(--mono); }
+/* slots de label (forma com 2 textos, JS revela o certo) */
+[data-inema-read-toggle] .inema-label-done,
+[data-inema-read-toggle] .inema-ico-done { display: none; }
+[data-inema-read-toggle][aria-pressed="true"] .inema-label-todo,
+[data-inema-read-toggle].is-read .inema-label-todo,
+[data-inema-read-toggle][aria-pressed="true"] .inema-ico-todo,
+[data-inema-read-toggle].is-read .inema-ico-todo { display: none; }
+[data-inema-read-toggle][aria-pressed="true"] .inema-label-done,
+[data-inema-read-toggle].is-read .inema-label-done { display: inline; }
+[data-inema-read-toggle][aria-pressed="true"] .inema-ico-done,
+[data-inema-read-toggle].is-read .inema-ico-done { display: inline-flex; }
+
+/* ---- TENHO UMA DUVIDA — [data-inema-doubt-toggle] (aria-pressed) ---- */
+.doubt-btn,
+[data-inema-doubt-toggle] {
+  display: flex; align-items: center; justify-content: flex-start; gap: 10px;
+  width: 100%; margin-top: 11px; padding: 9px 11px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 0.92rem; color: var(--mark); cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.doubt-btn:hover, [data-inema-doubt-toggle]:hover { border-color: var(--mark-soft); }
+.doubt-btn[aria-pressed="true"],
+[data-inema-doubt-toggle][aria-pressed="true"],
+[data-inema-doubt-toggle].is-doubt {
+  border-color: var(--mark-soft);
+  background: color-mix(in oklch, var(--mark) 8%, var(--bg));
+}
+[data-inema-doubt-toggle][data-resolved="true"] { opacity: 0.7; text-decoration: line-through; }
+.doubt-btn .q {
+  flex: 0 0 auto; width: 20px; height: 20px; border: 1px solid var(--mark-soft);
+  border-radius: 50%; display: grid; place-items: center;
+  font-family: var(--font-disp); font-style: italic; font-size: 0.82rem; color: var(--mark);
+}
+.doubt-btn .txt { flex: 1 1 auto; text-align: left; }
+
+/* campo inline da duvida (abre na margem, NUNCA modal) */
+.doubt-note { max-height: 0; overflow: hidden; transition: max-height var(--dur-slow) var(--ease); }
+.doubt-note.open, .doubt-note[data-open="true"] { max-height: 220px; margin-top: 8px; }
+.doubt-note textarea {
+  width: 100%; resize: vertical; min-height: 60px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg);
+  font-family: var(--font-body); font-style: italic; font-size: 0.85rem; color: var(--text-muted);
+  padding: 8px 9px; line-height: 1.45;
+}
+
+
+/* =============================================================================
+   17. POPOVER DE SELECAO (grifo: selecao -> acao minima)
+   Posicionado pelo learn.js; aqui so o visual. Estado aberto via [data-open].
+   ============================================================================= */
+
+.selpop, [data-inema-selpop] {
+  position: absolute; z-index: 90;
+  display: flex; align-items: center; gap: 0.35rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 6px 24px oklch(0.255 0.012 70 / 0.22);
+  opacity: 0; transform: translateY(2px); pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.selpop[data-open="true"], [data-inema-selpop][data-open="true"] {
+  opacity: 1; transform: translateY(0); pointer-events: auto;
+}
+.swatch, [data-inema-swatch] {
+  inline-size: 1.3rem; block-size: 1.3rem; padding: 0;
+  border-radius: 50%; border: 1.5px solid var(--border); cursor: pointer;
+}
+[data-inema-swatch][data-hl="amarelo"], [data-inema-swatch][data-hl="yellow"] { background: oklch(0.905 0.105 100); }
+[data-inema-swatch][data-hl="verde"],   [data-inema-swatch][data-hl="green"]  { background: oklch(0.620 0.110 150); }
+[data-inema-swatch][data-hl="azul"],    [data-inema-swatch][data-hl="blue"]   { background: var(--accent); }
+[data-inema-swatch][data-hl="rosa"],    [data-inema-swatch][data-hl="pink"]   { background: oklch(0.640 0.110 360); }
+[data-inema-swatch][data-hl="duvida"],  [data-inema-swatch][data-hl="doubt"]  {
+  background: var(--mark); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--mark-soft);
+}
+[data-inema-swatch][aria-pressed="true"], [data-inema-swatch].is-active {
+  border-color: var(--text); transform: scale(1.08);
+}
+.selpop__sep { inline-size: 1px; block-size: 1.2rem; background: var(--border); }
+.selpop__action, [data-inema-act] {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.3rem 0.55rem; font-family: var(--mono); font-size: 0.74rem;
+  letter-spacing: 0.04em; color: var(--text); background: transparent;
+  border: 0; border-radius: var(--radius-sm); cursor: pointer;
+}
+.selpop__action:hover, [data-inema-act]:hover { background: var(--surface-2); }
+
+
+/* =============================================================================
+   18. PROGRESSO — marcador fino "N de M" + .progress-line (NUNCA 3 barras)
+   [data-inema-meter="curso|trilha:N|modulo:X-Y"]. O learn.js escreve --inema-pct
+   (0..100) + ARIA (role=progressbar, aria-valuetext="N de M (P%)").
+   ============================================================================= */
+
+[data-inema-meter] {
+  --inema-pct: 0;
+  display: inline-flex; align-items: center; gap: var(--s3);
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+/* o "N de M" (marcador silencioso, discreto) */
+[data-inema-meter-frac] { color: var(--text-muted); white-space: nowrap; }
+[data-inema-meter-frac] strong { color: var(--text); font-weight: 600; }
+[data-inema-meter-pct]  { color: var(--text-faint); white-space: nowrap; }
+
+/* UMA linha fina (NAO barra grossa, NAO 3 lado a lado) */
+.progress-line {
+  position: relative; flex: 1 1 auto; min-width: 80px;
+  block-size: 2px; background: var(--border-soft); border-radius: 2px; overflow: hidden;
+}
+.progress-line__fill, [data-inema-meter-fill] {
+  display: block; block-size: 100%;
+  inline-size: calc(var(--inema-pct, 0) * 1%);
+  background: var(--accent);
+  transition: inline-size var(--dur-slow) var(--ease);
+}
+/* 100% — celebracao CONTIDA (sem confete, sem streak) */
+[data-inema-meter][data-complete="true"] .progress-line__fill,
+[data-inema-meter][data-complete="true"] [data-inema-meter-fill] { background: var(--accent-soft); }
+
+
+/* =============================================================================
+   19. KNOWLEDGE CHECK (auto-checagem, sem pontuacao)
+   ============================================================================= */
+
+.check { margin: var(--s8) 0 0; max-width: var(--measure); border-top: 1px solid var(--border); padding-top: var(--s6); }
+.check h2 {
+  font-family: var(--font-disp); font-weight: 500; font-size: 1.4rem;
+  color: var(--text); margin: 0 0 var(--s2); letter-spacing: -0.005em;
+}
+.check .intro { color: var(--text-muted); font-style: italic; margin: 0 0 var(--s5); }
+.q-item { margin: 0 0 var(--s4); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.q-item > summary {
+  list-style: none; cursor: pointer; padding: var(--s4) var(--s5);
+  font-family: var(--font-disp); font-weight: 500; font-size: 1.05rem; color: var(--text);
+  display: flex; gap: var(--s3); align-items: baseline;
+}
+.q-item > summary::-webkit-details-marker { display: none; }
+.q-item > summary .qn { font-family: var(--mono); font-size: 0.82rem; color: var(--accent); flex: 0 0 auto; }
+.q-item > summary .reveal {
+  margin-left: auto; font-family: var(--mono); font-size: 0.7rem;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); flex: 0 0 auto;
+}
+.q-item[open] > summary .reveal { color: var(--accent); }
+.q-item .ans { padding: 0 var(--s5) var(--s5); color: var(--text-muted); border-top: 1px solid var(--border); }
+.q-item .ans p { margin: var(--s4) 0 0; }
+
+/* checagem leve opcional declarada via learn.js (feedback NAO-bloqueante) */
+[data-inema-check] {
+  margin: var(--s6) 0 0; padding: var(--s4) var(--s5);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.inema-check__q { font-weight: 600; color: var(--text); margin-bottom: var(--s3); }
+.inema-check__options { display: flex; flex-direction: column; gap: var(--s2); }
+.inema-check__option {
+  display: flex; align-items: flex-start; gap: var(--s2); text-align: left;
+  padding: 0.6rem 0.75rem; font: inherit; font-size: 0.92rem; color: var(--text);
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;
+}
+.inema-check__option:hover { border-color: var(--accent); }
+.inema-check__option[data-state="correct"] { border-color: var(--ok); background: color-mix(in oklch, var(--ok) 12%, var(--bg)); }
+.inema-check__option[data-state="wrong"]   { border-color: var(--warn); background: color-mix(in oklch, var(--warn) 10%, var(--bg)); }
+.inema-check__feedback { margin-top: var(--s3); font-size: 0.88rem; color: var(--text-muted); }
+.inema-check__feedback[data-tone="correct"] { color: var(--ok); }
+
+
+/* =============================================================================
+   20. MINHA JORNADA — entrada [data-inema-journey-open] + painel .journey
+   Sem barras; grade silenciosa de quadradinhos. O learn.js abre como dialog.
+   ============================================================================= */
+
+[data-inema-journey-open] {
+  display: inline-flex; align-items: center; gap: var(--s2);
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent); background: transparent; border: 1px solid var(--accent);
+  border-radius: var(--radius-sm); padding: 8px 14px; cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+[data-inema-journey-open]:hover { background: var(--accent); color: var(--on-accent); }
+.inema-journey-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-inline-size: 1.2rem; block-size: 1.2rem; padding: 0 0.35rem;
+  font-family: var(--mono); font-size: 0.66rem; font-weight: 600; line-height: 1;
+  color: var(--on-accent); background: var(--accent); border-radius: 999px;
+}
+.inema-journey-badge[data-count="0"] { display: none; }
+
+/* painel consolidado embutido na pagina (lidos/duvidas/notas) */
+.journey {
+  margin: var(--s8) 0 0; max-width: var(--measure);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface-2); box-shadow: 0 1px 0 var(--surface-deep);
+}
+.journey-top {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s4);
+  padding: var(--s4) var(--s5); border-bottom: 1px solid var(--border);
+}
+.journey-top h2 {
+  font-family: var(--font-disp); font-weight: 500; font-size: 1.25rem;
+  margin: 0; color: var(--text); letter-spacing: -0.01em;
+}
+.journey-top h2 .ico { color: var(--accent); font-style: italic; margin-right: 0.3ch; }
+.journey-cta {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent); background: transparent; border: 1px solid var(--accent); border-radius: var(--radius-sm);
+  padding: 8px 14px; cursor: pointer; transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.journey-cta:hover { background: var(--accent); color: var(--on-accent); }
+.journey-body { display: grid; grid-template-columns: repeat(3, 1fr); }
+.jstat { padding: var(--s4) var(--s5); border-right: 1px solid var(--border); }
+.jstat:last-child { border-right: 0; }
+.jstat .k {
+  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-faint); margin-bottom: var(--s2);
+}
+.jstat .v { font-family: var(--font-disp); font-size: 0.98rem; color: var(--text); line-height: 1.4; }
+.jstat .v em { font-style: italic; color: var(--accent); }
+.jstat .v .nm { font-family: var(--mono); font-style: normal; color: var(--text-faint); font-size: 0.82rem; letter-spacing: 0.04em; }
+/* grade silenciosa de quadradinhos (mastery), NUNCA barra */
+.jgrid { display: flex; gap: 4px; margin-top: var(--s3); flex-wrap: wrap; }
+.jgrid i { width: 11px; height: 11px; border: 1px solid var(--border); background: var(--surface-deep); border-radius: 1px; }
+.jgrid i.on  { background: var(--accent); border-color: var(--accent); }
+.jgrid i.cur { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 2px var(--surface-2); }
+
+/* ---- painel da jornada como overlay (quando o learn.js abre como dialog) ---- */
+.inema-journey-backdrop {
+  position: fixed; inset: 0; z-index: 80; background: oklch(0.255 0.012 70 / 0.5);
+  opacity: 0; pointer-events: none; transition: opacity var(--dur) var(--ease);
+}
+.inema-journey-backdrop[data-open="true"] { opacity: 1; pointer-events: auto; }
+.inema-journey-overlay, .inema-journey {
+  position: fixed; z-index: 81; inset-block: 0; inset-inline-end: 0;
+  inline-size: min(30rem, 100%); display: flex; flex-direction: column;
+  background: var(--bg); border-inline-start: 1px solid var(--border);
+  box-shadow: -12px 0 40px oklch(0.255 0.012 70 / 0.28); color: var(--text);
+  transform: translateX(100%); transition: transform var(--dur-slow) var(--ease);
+}
+.inema-journey-overlay[data-open="true"], .inema-journey[data-open="true"] { transform: translateX(0); }
+@media (max-width: 640px) { .inema-journey-overlay, .inema-journey { inline-size: 100%; border-inline-start: none; } }
+
+
+/* =============================================================================
+   21. PROXIMA ACAO (UMA clara) + COLOFAO
+   ============================================================================= */
+
+.nextup {
+  margin: var(--s7) 0 0; max-width: var(--measure);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s4);
+  padding: var(--s4) var(--s5); border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface);
+}
+.nextup .k { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 4px; }
+.nextup .t { font-family: var(--font-disp); font-size: 1.1rem; color: var(--text); }
+.nextup a.go {
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em;
+  color: var(--on-accent); background: var(--accent); border-radius: var(--radius-sm);
+  padding: 10px 16px; text-decoration: none; white-space: nowrap;
+}
+.nextup a.go:hover { background: var(--accent-soft); }
+
+.colophon {
+  max-width: var(--shell-max); margin: var(--s8) auto 0; padding: var(--s5) var(--shell-pad) 0;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--s5);
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-faint); flex-wrap: wrap;
+}
+.colophon .pg {
+  font-family: var(--font-disp); font-style: italic; text-transform: none;
+  letter-spacing: 0; font-size: 0.85rem; color: var(--text-muted);
+}
+
+
+/* =============================================================================
+   22. RESPONSIVO — mobile: o trilho desmonta; sidenote COLAPSA INLINE (sem JS)
+   A .sidenote/.note-hand/.control/[data-inema-rail] entram no fluxo, abaixo do
+   paragrafo, como bloco calmo com filete lateral.
+   ============================================================================= */
+
+@media (max-width: 1080px) {
+  .reader-inner, .masthead, .spread, .colophon {
+    padding-left: var(--s5); padding-right: var(--s5);
+  }
+  .leaf { grid-template-columns: 1fr; column-gap: 0; }
+  /* dissolve o trilho: seus filhos entram no fluxo da coluna */
+  .margin-rail { display: contents; }
+  .margin-rail::before { display: none; }
+
+  .toc ol { columns: 1; }
+  .journey-body { grid-template-columns: 1fr; }
+  .jstat { border-right: 0; border-bottom: 1px solid var(--border); }
+  .jstat:last-child { border-bottom: 0; }
+
+  /* sidenote/controle viram bloco inline calmo abaixo do texto */
+  .sidenote, .note-hand, .control, [data-inema-rail] {
+    max-width: var(--measure); border-left: 2px solid var(--border);
+    padding-left: var(--s4); margin-left: 0;
+  }
+  .note-hand { border-left: 2px solid var(--mark-soft); }
+
+  .reader-controls .rc-read { display: none; }
+}
+
+@media (max-width: 560px) {
+  .reader-inner { flex-wrap: wrap; gap: var(--s3); }
+  .toc ol { columns: 1; }
+  .progress-line { min-width: 56px; }
+}
+
+
+/* =============================================================================
+   23. ACESSIBILIDADE — reduced-motion + forced-colors
+   ============================================================================= */
+
+/* prefers-reduced-motion: zera/encurta, PRESERVA o estado final */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  html { scroll-behavior: auto; }
+}
+/* override explicito do aluno (persistido pelo learn.js) */
+html[data-reduced-motion="reduce"] *,
+html[data-reduced-motion="reduce"] *::before,
+html[data-reduced-motion="reduce"] *::after {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* alto contraste do SO: bordas solidas, foco visivel garantido */
+@media (forced-colors: active) {
+  .control, .go-deeper, .journey, [data-inema-rail], .selpop,
+  [data-inema-read-toggle], [data-inema-doubt-toggle], [data-inema-journey-open] {
+    border: 1px solid CanvasText;
+  }
+  :focus-visible { outline: 2px solid Highlight; }
+  .progress-line__fill, [data-inema-meter-fill] { forced-color-adjust: none; }
+}
+
+/* =============================================================================
+   FIM — learn.css (v3)
+   Reading-mode default · papel quente OKLCH · acento UNICO #2C5282 ·
+   sidenotes CSS-puro na margem · progresso = "N de M" + .progress-line (1 linha)
+   · zero #fff/#000, zero gradiente em texto, zero card na leitura, zero sidebar
+   fixa. Tudo enhancement progressivo: a pagina le perfeita com JS desligado.
+   ============================================================================= */

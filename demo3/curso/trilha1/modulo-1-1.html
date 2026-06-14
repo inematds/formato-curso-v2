@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="papel">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ===================================================================
+       1) ANTI-FOUC — script BLOQUEANTE, PRIMEIRO no <head>, ANTES das fontes
+          e do learn.css. Le inema.prefs (global, cross-curso) e aplica
+          data-theme + color-scheme + --measure/--leading/--fontscale +
+          data-font/--font-disp/--font-body ANTES do primeiro paint.
+          try/catch total => default papel no erro (preserva a marca INEMA).
+          (REL = "../.." — caminho ate a pasta com assets/.)
+       =================================================================== -->
+  <script>
+  (function () {
+    try {
+      var html = document.documentElement;
+      var DEF = { theme: 'papel', font: 'serif', fontScale: 100, lineWidth: 66, leading: 1.66 };
+      function clone(o) { var r = {}; for (var x in o) r[x] = o[x]; return r; }
+      var p = clone(DEF);
+      try {
+        var raw = localStorage.getItem('inema.prefs');
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            for (var k in DEF) if (parsed[k] != null) p[k] = parsed[k];
+          }
+        }
+      } catch (e) { p = clone(DEF); }
+
+      var THEMES = {
+        'papel':  { attr: 'papel',  cs: 'light' },
+        'sepia':  { attr: 'sepia',  cs: 'light' },
+        'escuro': { attr: 'escuro', cs: 'dark'  }
+      };
+      var t = THEMES[p.theme] || THEMES['papel'];
+      html.setAttribute('data-theme', t.attr);
+      html.style.colorScheme = t.cs;
+
+      var font = (p.font === 'sans' || p.font === 'hyperlegible') ? p.font : 'serif';
+      html.setAttribute('data-font', font);
+
+      var s = html.style;
+
+      var scale = (+p.fontScale || 100);
+      s.setProperty('--fontscale', scale + '%');
+      html.setAttribute('data-fontscale', String(scale));
+
+      var lw = (+p.lineWidth || 66);
+      s.setProperty('--measure', lw + 'ch');
+      html.setAttribute('data-line-width', lw <= 62 ? 'estreito' : (lw >= 70 ? 'largo' : 'medio'));
+
+      var lh = (+p.leading || 1.66);
+      s.setProperty('--leading', lh.toString());
+      html.setAttribute('data-leading', lh <= 1.66 ? 'compacto' : 'confortavel');
+
+      var DISP = {
+        serif: '"Spectral", Georgia, "Times New Roman", serif',
+        sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        hyperlegible: '"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif'
+      };
+      var BODY = {
+        serif: '"Source Serif 4", Georgia, "Times New Roman", serif',
+        sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        hyperlegible: '"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif'
+      };
+      s.setProperty('--font-disp', DISP[font] || DISP.serif);
+      s.setProperty('--font-body', BODY[font] || BODY.serif);
+    } catch (err) {
+      try {
+        document.documentElement.setAttribute('data-theme', 'papel');
+        document.documentElement.style.colorScheme = 'light';
+      } catch (e) {}
+    }
+  })();
+  </script>
+
+  <!-- 2) Identidade do curso + manifesto (courseId estavel + estrutura completa) -->
+  <meta name="inema-course" content="demo3" />
+  <script type="application/json" data-inema-manifest>
+  {
+    "course": "demo3",
+    "tracks": [
+      { "n": "1", "title": "Fundamentos", "modules": [
+        { "id": "1-1", "title": "Fundamentos de Engenharia de Prompts", "topics": 7, "href": "curso/trilha1/modulo-1-1.html" },
+        { "id": "1-2", "title": "Da ideia ao prompt em producao", "topics": 7, "href": "curso/trilha1/modulo-1-2.html" }
+      ] }
+    ]
+  }
+  </script>
+
+  <title>Modulo 1.1 — Fundamentos de Engenharia de Prompts | Curso Demo v3</title>
+
+  <!-- 3) Fontes (DEPOIS do anti-FOUC) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400;1,8..60,500&family=IBM+Plex+Mono:wght@400;500&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <!-- 4) Folha de estilos da camada de aprendizagem v3 (caminho RELATIVO) -->
+  <link rel="stylesheet" href="../../assets/learn.css" />
+</head>
+
+<body>
+
+  <!-- SKIP LINK (primeiro focavel) -->
+  <a class="skip" href="#reading">Pular para o conteudo</a>
+
+  <!-- ===================== READER BAR — controles minimos ===================== -->
+  <div class="reader-bar">
+    <div class="reader-inner">
+      <a class="wordmark" href="../../index.html">INEMA<span class="dot">.</span><span class="club">CLUB</span></a>
+      <div class="reader-controls" data-inema-appearance>
+        <span class="rc-read"><span data-inema-meter="modulo:1-1"><span data-inema-meter-frac><strong>0</strong> de 7</span></span> lidas</span>
+        <div class="rc-group" role="group" aria-label="Tema de leitura">
+          <button type="button" class="rc-btn" data-inema-set-theme="papel" aria-pressed="true">Papel</button>
+          <button type="button" class="rc-btn" data-inema-set-theme="sepia" aria-pressed="false">Sepia</button>
+          <button type="button" class="rc-btn" data-inema-set-theme="escuro" aria-pressed="false">Escuro</button>
+        </div>
+        <div class="rc-group" role="group" aria-label="Fonte de leitura">
+          <button type="button" class="rc-btn" data-inema-set-font="serif" aria-pressed="true">Serif</button>
+          <button type="button" class="rc-btn" data-inema-set-font="sans" aria-pressed="false">Sans</button>
+          <button type="button" class="rc-btn" data-inema-set-font="hyperlegible" aria-pressed="false" title="Atkinson Hyperlegible — legibilidade maxima">Aa&#8633;</button>
+        </div>
+        <div class="rc-group" role="group" aria-label="Tamanho do texto">
+          <button type="button" class="rc-btn" data-inema-set-fontscale="100" aria-pressed="true">A</button>
+          <button type="button" class="rc-btn" data-inema-set-fontscale="112" aria-pressed="false">A+</button>
+          <button type="button" class="rc-btn" data-inema-set-fontscale="125" aria-pressed="false">A++</button>
+        </div>
+        <div class="rc-group" role="group" aria-label="Largura da linha">
+          <button type="button" class="rc-btn" data-inema-set-linewidth="62" aria-pressed="false">Estreito</button>
+          <button type="button" class="rc-btn" data-inema-set-linewidth="66" aria-pressed="true">Medio</button>
+          <button type="button" class="rc-btn" data-inema-set-linewidth="70" aria-pressed="false">Largo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MASTHEAD + WAYFINDING ===================== -->
+  <header class="masthead">
+    <nav class="wayfind" aria-label="Onde voce esta">
+      <span><a href="../../index.html" style="text-decoration:none">Curso Demo</a></span>
+      <span class="sep">&middot;</span>
+      <span>Trilha <b>1</b> Fundamentos</span>
+      <span class="sep">&middot;</span>
+      <span>Modulo <b>1.1</b> / 2</span>
+      <span class="sep">&middot;</span>
+      <span data-inema-section-counter>Secao 1 de 7</span>
+      <span class="sep">&middot;</span>
+      <button type="button" data-inema-journey-open>
+        Minha jornada <span class="inema-journey-badge" data-inema-journey-badge data-count="0">0</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ===================== SPREAD: coluna de leitura + trilho de margem ===================== -->
+  <main class="spread">
+    <div class="leaf">
+
+      <!-- ============================= COLUNA DE LEITURA ============================= -->
+      <article class="reading" id="reading">
+
+        <!-- abertura do modulo -->
+        <p class="kicker">Modulo 1.1 &middot; Trilha 1 &middot; Fundamentos</p>
+        <h1 class="module">Fundamentos de <em>Engenharia de Prompts</em></h1>
+        <p class="deck">Escrever instrucoes que um modelo entende de primeira &mdash; pensando o prompt
+          como um pedido bem-feito, nao como uma formula magica.</p>
+        <p class="read-meta">
+          <span class="here">Lendo agora</span>
+          <span>~16 min &middot; modulo inteiro</span>
+          <span>7 secoes</span>
+        </p>
+
+        <!-- objetivos: o que voce vai entender -->
+        <section class="aims" aria-label="O que voce vai entender">
+          <h2>O que voce vai entender</h2>
+          <ul>
+            <li>Por que um prompt e um <b>pedido</b>, e quais pecas o modelo precisa para responde-lo.</li>
+            <li>Como <b>contexto e papel</b> mudam a resposta antes mesmo de voce descrever a tarefa.</li>
+            <li>Como escrever a tarefa, o <b>formato</b> e os exemplos para colapsar a saida no que voce quer.</li>
+            <li>Como ler a saida e <b>iterar</b> sem reescrever tudo do zero &mdash; e o checklist que fecha o ciclo.</li>
+          </ul>
+        </section>
+
+        <!-- SUMARIO -->
+        <nav class="toc" aria-label="Sumario do modulo" data-inema-toc>
+          <p class="toc-head">Sumario &mdash; sete movimentos</p>
+          <ol>
+            <li class="current"><span class="dot-now"></span><span class="n">1</span>
+              <a href="#topico-1"><span class="t">Veja a anatomia de um prompt</span></a></li>
+            <li><span class="n">2</span><a href="#topico-2"><span class="t">Defina o papel e o contexto</span></a><span class="leader"></span></li>
+            <li><span class="n">3</span><a href="#topico-3"><span class="t">Escreva a tarefa como um pedido unico</span></a><span class="leader"></span></li>
+            <li><span class="n">4</span><a href="#topico-4"><span class="t">Especifique o formato da resposta</span></a><span class="leader"></span></li>
+            <li><span class="n">5</span><a href="#topico-5"><span class="t">Ensine com poucos exemplos</span></a><span class="leader"></span></li>
+            <li><span class="n">6</span><a href="#topico-6"><span class="t">Itere lendo a saida</span></a><span class="leader"></span></li>
+            <li><span class="n">7</span><a href="#topico-7"><span class="t">Monte seu checklist de revisao</span></a><span class="leader"></span></li>
+          </ol>
+        </nav>
+
+        <!-- ============================= SECAO 1 ============================= -->
+        <section id="topico-1"
+                 data-inema-topic="modulo-1-1#topico-1"
+                 data-inema-module="1-1"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">Secao 1 de 7</span><span>&middot;</span><span>Anatomia</span>
+          </div>
+          <h2 class="head"><span class="num">1.</span>Veja a anatomia de um prompt</h2>
+
+          <div class="prose">
+            <p class="lede dropcap" data-inema-block="m1-1-t1-p1">Um prompt nao e uma pergunta solta jogada na
+              caixa de texto: e um pequeno <span class="sidenote-ref">1</span>briefing. Quando o resultado vem
+              morno, generico ou simplesmente errado, quase nunca o problema e a redacao &mdash; e uma <em>peca
+              ausente</em>. Falta uma das informacoes que o modelo precisava para decidir o que fazer, e ele
+              preencheu o buraco com a media de tudo que ja viu.</p>
+
+            <p data-inema-block="m1-1-t1-p2">Pense no que acontece do outro lado. O modelo recebe seu texto e,
+              palavra apos palavra, estima qual continuacao e mais provavel dado <em>tudo</em> que voce escreveu.
+              Ele nao tem acesso a sua intencao, ao seu projeto, ao seu leitor &mdash; so ao que esta na janela.
+              Por isso a qualidade da saida e, antes de mais nada, uma funcao de quanto do
+              <span class="dfn"><details class="dfn"><summary>contexto necessario</summary><span class="body"><b>Contexto necessario</b> e o conjunto minimo de fatos, restricoes e objetivos sem os quais a tarefa fica ambigua. Nao e "tudo o que voce sabe" &mdash; e so o que muda a resposta.</span></details></span>
+              voce de fato colocou ali.</p>
+
+            <h3 class="sub">As cinco pecas que um pedido completo carrega</h3>
+
+            <p data-inema-block="m1-1-t1-p3">Um prompt completo tende a carregar cinco pecas. Nao e uma formula
+              rigida &mdash; e uma lista de verificacao mental. <strong>Contexto</strong> situa o cenario e quem
+              fala. <strong>Tarefa</strong> e o pedido unico e explicito. <strong>Formato</strong> diz a forma da
+              resposta. <strong>Exemplos</strong> mostram, em vez de descrever. E <strong>iteracao</strong> fecha
+              o ciclo: voce le a saida e devolve o que faltou.</p>
+          </div>
+
+          <!-- recall ativo: pare e preveja -->
+          <div class="predict">
+            <p class="lbl">Pare e preveja</p>
+            <p>Antes de ver a figura: dessas cinco pecas, qual voce acha que, sozinha, costuma destravar mais
+              resultados ruins quando e adicionada?</p>
+            <details>
+              <summary>Ver uma resposta possivel</summary>
+              <p class="answer">Quase sempre e o <strong>contexto</strong> &mdash; porque ele muda a
+                interpretacao de <em>todas</em> as outras pecas. Uma boa tarefa lida no contexto errado ainda
+                produz a resposta errada. Guardamos essa intuicao: e o tema da Secao 2.</p>
+            </details>
+          </div>
+
+          <!-- a figura: uma por ideia -->
+          <figure class="figure">
+            <figcaption><span class="fig-n">Fig. 1</span> &middot; As cinco pecas de um <b>briefing</b> de prompt</figcaption>
+            <svg class="diagram" viewBox="0 0 720 232" role="img"
+                 aria-label="Diagrama: Contexto, Tarefa, Formato e Exemplos compoem o pedido; a Iteracao realimenta o contexto.">
+              <defs>
+                <pattern id="hatch1" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                  <line x1="0" y1="0" x2="0" y2="6" class="accent-stroke" stroke-width="2.4" opacity="0.16"/>
+                </pattern>
+              </defs>
+              <line x1="20" y1="156" x2="700" y2="156" class="rule-stroke" stroke-width="1"/>
+              <g>
+                <rect x="20" y="62" width="120" height="64" fill="url(#hatch1)" class="accent-stroke" stroke-width="1.2" rx="3"/>
+                <text x="80" y="48" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.5" class="faint">01</text>
+                <text x="80" y="100" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="18" class="ink">Contexto</text>
+                <text x="80" y="178" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">o cenario</text>
+                <text x="80" y="192" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">e quem fala</text>
+              </g>
+              <g>
+                <rect x="160" y="62" width="120" height="64" class="wash accent-stroke" stroke-width="1.2" rx="3"/>
+                <text x="220" y="48" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.5" class="faint">02</text>
+                <text x="220" y="100" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="18" class="ink">Tarefa</text>
+                <text x="220" y="178" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">o pedido</text>
+                <text x="220" y="192" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">unico</text>
+              </g>
+              <g>
+                <rect x="300" y="62" width="120" height="64" class="wash accent-stroke" stroke-width="1.2" rx="3"/>
+                <text x="360" y="48" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.5" class="faint">03</text>
+                <text x="360" y="100" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="18" class="ink">Formato</text>
+                <text x="360" y="178" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">forma da</text>
+                <text x="360" y="192" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">resposta</text>
+              </g>
+              <g>
+                <rect x="440" y="62" width="120" height="64" class="wash accent-stroke" stroke-width="1.2" rx="3"/>
+                <text x="500" y="48" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.5" class="faint">04</text>
+                <text x="500" y="100" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="18" class="ink">Exemplos</text>
+                <text x="500" y="178" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">poucos e</text>
+                <text x="500" y="192" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">certeiros</text>
+              </g>
+              <g>
+                <rect x="580" y="62" width="120" height="64" fill="url(#hatch1)" class="accent-stroke" stroke-width="1.2" rx="3"/>
+                <text x="640" y="48" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.5" class="faint">05</text>
+                <text x="640" y="100" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="18" class="ink">Iteracao</text>
+                <text x="640" y="178" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">leia, ajuste,</text>
+                <text x="640" y="192" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">repita</text>
+              </g>
+              <g class="accent">
+                <circle cx="80" cy="156" r="3"/><circle cx="220" cy="156" r="3"/>
+                <circle cx="360" cy="156" r="3"/><circle cx="500" cy="156" r="3"/><circle cx="640" cy="156" r="3"/>
+              </g>
+              <path d="M 640 58 C 640 18, 80 18, 80 58" fill="none" class="mark-stroke" stroke-width="1.3" stroke-dasharray="4 4"/>
+              <path d="M 80 58 l -5 -7 m 5 7 l 6 -6" fill="none" class="mark-stroke" stroke-width="1.3"/>
+              <text x="360" y="14" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" letter-spacing="1.4" class="mark-fill">A ITERACAO REALIMENTA O CONTEXTO</text>
+            </svg>
+          </figure>
+
+          <div class="prose">
+            <p data-inema-block="m1-1-t1-p4">Repare na seta tracejada: a iteracao nao e um sexto passo no fim da
+              fila, e o que devolve informacao para o comeco. Voce le a saida, descobre qual peca estava vaga e a
+              recoloca no contexto. Engenharia de prompt madura e quase toda feita desse laco curto &mdash; nao
+              de acertar tudo na primeira tentativa.</p>
+          </div>
+
+          <!-- indo mais fundo: divulgacao progressiva -->
+          <details class="go-deeper">
+            <summary><span class="chev">&#9656;</span> Indo mais fundo: por que o modelo "preenche o buraco"
+              <span class="opt">opcional</span></summary>
+            <div class="inner">
+              <p>O caminho-feliz acima ja basta para usar bem. Esta camada e para quem quer entender o
+                <em>porque</em> mecanico &mdash; e pode ser pulada sem perda.</p>
+              <p>Um modelo de linguagem e, no fundo, um estimador de continuacao: dado o texto ate aqui, qual e o
+                proximo token mais provavel? Quando o contexto e especifico, a distribuicao de continuacoes
+                provaveis fica <em>estreita</em> &mdash; ha poucos caminhos coerentes, e o modelo segue por um
+                deles. Quando o contexto e vago, a distribuicao fica <em>larga</em>: muitas continuacoes sao
+                igualmente plausiveis, e o modelo recorre ao que e mais comum no corpus &mdash; ou seja, ao
+                generico. Foi exatamente isso que voce percebeu como resposta "morna".</p>
+              <p>Ha uma consequencia pratica util: adicionar contexto raramente e desperdicio, mas adicionar
+                contexto <em>irrelevante</em> pode atrapalhar, porque concorre pela atencao do modelo. Por isso a
+                Secao 2 insiste em contexto <em>necessario</em>, nao em contexto <em>abundante</em>.</p>
+              <div class="codeblock"><span class="c"># Vago — distribuicao larga, saida generica</span>
+Escreva um email de cobranca.
+
+<span class="c"># Especifico — distribuicao estreita, saida util</span>
+<span class="k">Contexto:</span> cliente atrasou 5 dias, e recorrente, tom cordial.
+<span class="k">Tarefa:</span> escreva o email de lembrete.
+<span class="k">Formato:</span> 4 linhas, sem assunto, assinatura "Equipe".</div>
+            </div>
+          </details>
+        </section>
+
+        <!-- ============================= SECAO 2 ============================= -->
+        <section id="topico-2"
+                 data-inema-topic="modulo-1-1#topico-2"
+                 data-inema-module="1-1"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">Secao 2 de 7</span><span>&middot;</span><span>Contexto e papel</span>
+          </div>
+          <h2 class="head"><span class="num">2.</span>Defina o papel e o contexto</h2>
+
+          <div class="prose">
+            <p class="lede" data-inema-block="m1-1-t2-p1">Antes de pedir qualquer coisa, voce decide <em>de
+              onde</em> a resposta vem. Dois prompts com a mesma tarefa &mdash; "explique recursao" &mdash;
+              produzem textos completamente diferentes se um diz "para uma crianca de dez anos" e o outro diz
+              "para um colega que ja programa". A tarefa nao mudou. Mudou o <em>papel</em> de quem responde e o
+              leitor a quem responde. Esse e o controle mais barato e mais subutilizado da engenharia de prompt.</p>
+
+            <p data-inema-block="m1-1-t2-p2">Definir um papel nao e vestir o modelo de fantasia ("voce e um
+              especialista mundial"). E estreitar o espaco de respostas plausiveis: ao nomear <em>quem fala</em>
+              e <em>para quem</em>, voce descarta de antemao o registro errado, o nivel de detalhe errado e os
+              exemplos fora de lugar.<span class="sidenote-ref">2</span> O papel funciona porque carrega, de
+              forma compacta, um monte de contexto implicito.</p>
+
+            <h3 class="sub">Contexto e o que muda a resposta &mdash; nada mais</h3>
+
+            <p data-inema-block="m1-1-t2-p3">A tentacao e despejar tudo o que voce sabe. Resista. Bom contexto e
+              <em>seletivo</em>: contem os fatos, as restricoes e o objetivo que, se ausentes, deixariam a tarefa
+              ambigua &mdash; e <em>so</em> isso. Um teste simples antes de colar um paragrafo no prompt:
+              <strong>se eu apagar esta frase, a resposta certa muda?</strong> Se nao muda, ela esta disputando
+              atencao a toa.</p>
+          </div>
+
+          <!-- figura 2: papel estreita o leque -->
+          <figure class="figure">
+            <figcaption><span class="fig-n">Fig. 2</span> &middot; O papel <b>estreita</b> o leque de respostas plausiveis</figcaption>
+            <svg class="diagram" viewBox="0 0 720 220" role="img"
+                 aria-label="Diagrama: sem papel definido, o leque de respostas e largo e generico; com papel e leitor definidos, o leque fica estreito e util.">
+              <text x="170" y="32" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.4" class="faint">SEM PAPEL — LEQUE LARGO</text>
+              <circle cx="170" cy="70" r="5" class="ink"/>
+              <g class="rule-stroke" stroke-width="1.2" fill="none">
+                <path d="M170 70 L60 188"/><path d="M170 70 L110 192"/><path d="M170 70 L170 195"/>
+                <path d="M170 70 L230 192"/><path d="M170 70 L280 188"/>
+              </g>
+              <g class="faint">
+                <text x="58" y="205" text-anchor="middle" font-family="Source Serif 4, serif" font-size="10.5">vago</text>
+                <text x="110" y="207" text-anchor="middle" font-family="Source Serif 4, serif" font-size="10.5">generico</text>
+                <text x="170" y="209" text-anchor="middle" font-family="Source Serif 4, serif" font-size="10.5">medio</text>
+                <text x="230" y="207" text-anchor="middle" font-family="Source Serif 4, serif" font-size="10.5">prolixo</text>
+                <text x="282" y="205" text-anchor="middle" font-family="Source Serif 4, serif" font-size="10.5">solto</text>
+              </g>
+              <line x1="370" y1="44" x2="370" y2="196" class="rule-stroke" stroke-width="1" stroke-dasharray="3 4"/>
+              <text x="545" y="32" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.4" class="accent">COM PAPEL + LEITOR — ESTREITO</text>
+              <circle cx="545" cy="70" r="5" class="accent"/>
+              <g class="accent-stroke" stroke-width="1.4" fill="none">
+                <path d="M545 70 L520 190"/><path d="M545 70 L545 193"/><path d="M545 70 L570 190"/>
+              </g>
+              <path d="M545 70 L520 190 L570 190 Z" class="accent" opacity="0.08"/>
+              <g class="ink-soft">
+                <text x="520" y="205" text-anchor="middle" font-family="Source Serif 4, serif" font-size="10.5">no ponto</text>
+                <text x="545" y="207" text-anchor="middle" font-family="Source Serif 4, serif" font-size="10.5">no tom</text>
+                <text x="572" y="205" text-anchor="middle" font-family="Source Serif 4, serif" font-size="10.5">no nivel</text>
+              </g>
+            </svg>
+          </figure>
+
+          <div class="prose">
+            <p data-inema-block="m1-1-t2-p4">O leque da esquerda e o que voce recebe quando deixa o modelo
+              escolher o registro. O da direita e o que acontece quando voce decide por ele. Note que nao e
+              "menos liberdade" &mdash; e menos <em>ambiguidade</em>. O modelo continua criativo dentro do leque
+              estreito; ele so para de gastar criatividade adivinhando o que voce queria.</p>
+          </div>
+
+          <div class="predict">
+            <p class="lbl">Pare e preveja</p>
+            <p>Voce vai pedir um resumo de um artigo tecnico para postar no LinkedIn. Quais <em>duas</em> frases
+              de contexto teriam o maior efeito na qualidade do resultado?</p>
+            <details>
+              <summary>Ver uma resposta possivel</summary>
+              <p class="answer">Provavelmente <strong>o leitor</strong> ("para gestores nao-tecnicos") e
+                <strong>o objetivo do post</strong> ("gerar conversa, nao ensinar"). Ambas mudam tom, comprimento
+                e o que entra ou sai &mdash; muito mais do que pedir "faca um bom resumo".</p>
+            </details>
+          </div>
+
+          <details class="go-deeper">
+            <summary><span class="chev">&#9656;</span> Indo mais fundo: papel no sistema vs. papel no pedido
+              <span class="opt">opcional</span></summary>
+            <div class="inner">
+              <p>Camada opcional. Na pratica ha dois lugares para definir o papel, e eles servem a propositos
+                diferentes.</p>
+              <p>O <strong>papel persistente</strong> (frequentemente uma <em>system message</em>) vale para a
+                conversa inteira: "voce e um editor que prefere frases curtas". Use-o para o que nao muda entre
+                pedidos. Ja o <strong>papel pontual</strong>, escrito no proprio pedido, ajusta um caso
+                especifico: "neste, escreva como se fosse para um leitor cetico". A regra pratica: o que se
+                repete sobe para o papel persistente; o que e especifico desce para o pedido &mdash; assim voce
+                evita reescrever o mesmo preambulo toda vez e mantem cada pedido enxuto.</p>
+              <p>Ha um limite honesto a registrar: papel ajuda a <em>selecionar</em> conhecimento e registro que
+                o modelo ja tem; ele nao <em>cria</em> competencia ausente. "Voce e advogado" melhora o tom
+                juridico, mas nao garante que a lei citada exista. Por isso papel e <em>verificacao</em> (Secao 6)
+                andam juntos.</p>
+            </div>
+          </details>
+        </section>
+
+        <!-- ============================= SECAO 3 ============================= -->
+        <section id="topico-3"
+                 data-inema-topic="modulo-1-1#topico-3"
+                 data-inema-module="1-1"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">Secao 3 de 7</span><span>&middot;</span><span>A tarefa</span>
+          </div>
+          <h2 class="head"><span class="num">3.</span>Escreva a tarefa como um pedido unico</h2>
+
+          <div class="prose">
+            <p class="lede" data-inema-block="m1-1-t3-p1">O coracao do prompt e o <em>verbo de acao</em>: resuma,
+              classifique, extraia, reescreva, compare. Quanto mais especifico o verbo, menor a chance de o
+              modelo escolher uma tarefa diferente da que voce tinha em mente. "Fale sobre X" abre demais;
+              "liste tres riscos de X em ate 200 palavras" fecha.<span class="sidenote-ref">3</span></p>
+
+            <p data-inema-block="m1-1-t3-p2">O erro mais comum aqui nao e escrever mal &mdash; e empilhar. Um
+              paragrafo que pede "resuma, depois critique, depois sugira melhorias e ja escreva a versao final"
+              forca o modelo a equilibrar quatro tarefas concorrentes numa resposta so, e nenhuma sai bem feita.
+              Quando voce precisa de varias coisas, numere-as ou faca em turnos: um pedido, leia, o proximo. A
+              <em>iteracao</em> da Secao 1 e o que torna isso barato.</p>
+
+            <h3 class="sub">Quantifique sempre que der</h3>
+
+            <p data-inema-block="m1-1-t3-p3">Numeros sao o jeito mais barato de fechar a tarefa: "tres riscos",
+              "no maximo 200 palavras", "duas alternativas", "uma frase". Sem eles, o modelo escolhe o tamanho e
+              a quantidade pela media do corpus &mdash; que raramente coincide com o que voce precisa. Um limite
+              explicito tambem te poupa de cortar a resposta depois.</p>
+          </div>
+
+          <figure class="figure">
+            <figcaption><span class="fig-n">Fig. 3</span> &middot; Um verbo especifico <b>colapsa</b> as muitas saidas possiveis</figcaption>
+            <svg class="diagram" viewBox="0 0 720 200" role="img"
+                 aria-label="Diagrama: um pedido vago se ramifica em saidas A, B e C; um pedido unico e quantificado leva a uma unica saida previsivel.">
+              <rect x="20" y="74" width="160" height="52" class="wash rule-stroke" stroke-width="1.2" rx="3"/>
+              <text x="100" y="100" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="15" class="ink-soft">Pedido vago</text>
+              <text x="100" y="117" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" class="faint">"fale sobre X"</text>
+              <g class="rule-stroke" stroke-width="1.4" fill="none" opacity="0.85">
+                <path d="M180 90 C 250 70, 280 48, 360 44"/>
+                <path d="M180 100 C 250 100, 290 100, 360 100"/>
+                <path d="M180 110 C 250 130, 280 152, 360 156"/>
+              </g>
+              <text x="372" y="48" font-family="Source Serif 4, serif" font-size="12" class="faint">saida A</text>
+              <text x="372" y="104" font-family="Source Serif 4, serif" font-size="12" class="faint">saida B</text>
+              <text x="372" y="160" font-family="Source Serif 4, serif" font-size="12" class="faint">saida C</text>
+              <line x1="468" y1="36" x2="468" y2="164" class="rule-stroke" stroke-width="1" stroke-dasharray="3 4"/>
+              <rect x="500" y="74" width="180" height="52" fill="url(#hatch1)" class="accent-stroke" stroke-width="1.2" rx="3"/>
+              <text x="590" y="98" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="15" class="ink">Pedido unico</text>
+              <text x="590" y="116" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" class="ink-soft">"liste 3 riscos de X"</text>
+              <path d="M590 126 L590 168" class="accent-stroke" stroke-width="2" fill="none"/>
+              <path d="M590 168 l -5 -7 m 5 7 l 5 -7" class="accent-stroke" stroke-width="2" fill="none"/>
+              <text x="590" y="188" text-anchor="middle" font-family="Source Serif 4, serif" font-size="12" class="accent">saida previsivel</text>
+            </svg>
+          </figure>
+
+          <details class="go-deeper">
+            <summary><span class="chev">&#9656;</span> Indo mais fundo: verbos que abrem vs. verbos que fecham
+              <span class="opt">opcional</span></summary>
+            <div class="inner">
+              <p>Camada opcional, util para revisar prompts alheios. Alguns verbos sao ambiguos por natureza e
+                quase sempre pedem complemento.</p>
+              <p>Verbos que <em>abrem</em>: "explore", "aborde", "discorra sobre", "fale de". Eles nao dizem o que
+                produzir &mdash; o modelo escolhe. Verbos que <em>fecham</em>: "liste", "classifique em",
+                "extraia os campos", "reescreva em N palavras", "compare A e B em uma tabela". Sempre que pegar um
+                verbo aberto, pergunte "produzir o que, em que forma, em que tamanho?" e troque-o pelo verbo
+                fechado correspondente.</p>
+            </div>
+          </details>
+        </section>
+
+        <!-- ============================= SECAO 4 ============================= -->
+        <section id="topico-4"
+                 data-inema-topic="modulo-1-1#topico-4"
+                 data-inema-module="1-1"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">Secao 4 de 7</span><span>&middot;</span><span>Formato</span>
+          </div>
+          <h2 class="head"><span class="num">4.</span>Especifique o formato da resposta</h2>
+
+          <div class="prose">
+            <p class="lede" data-inema-block="m1-1-t4-p1">Se a resposta vai ser lida por uma pessoa, peca
+              <em>prosa curta</em>; se vai alimentar um sistema, peca <em>JSON</em> com chaves fixas. Definir o
+              formato e a alavanca mais barata para tornar a saida util de imediato, sem retrabalho. O formato
+              responde a uma pergunta que o modelo, sozinho, sempre chuta: "em que forma voce quer isto?"</p>
+
+            <p data-inema-block="m1-1-t4-p2">A regra que mais economiza tempo: <strong>peca o formato que o
+              destino consome.</strong> Se a saida vai para outro programa, descreva o esquema exato &mdash;
+              chaves, tipos, valores permitidos &mdash; e peca "responda apenas com isto, sem texto ao redor".
+              Cada frase de cortesia que o modelo adiciona ("Claro! Aqui esta...") vira um bug a jusante quando
+              um parser tenta ler aquilo como dado.<span class="sidenote-ref">4</span></p>
+          </div>
+
+          <figure class="figure">
+            <figcaption><span class="fig-n">Fig. 4</span> &middot; O mesmo conteudo, <b>tres formas</b> &mdash; o destino decide</figcaption>
+            <svg class="diagram" viewBox="0 0 720 200" role="img"
+                 aria-label="Diagrama: o mesmo conteudo pode sair como lista de bullets, tabela ou JSON; o destino define a escolha.">
+              <rect x="20" y="78" width="150" height="44" fill="url(#hatch1)" class="accent-stroke" stroke-width="1.2" rx="3"/>
+              <text x="95" y="105" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="16" class="ink">Conteudo</text>
+              <g class="rule-stroke" stroke-width="1.4" fill="none" opacity="0.85">
+                <path d="M170 90 C 240 56, 280 44, 360 44"/>
+                <path d="M170 100 C 240 100, 280 100, 360 100"/>
+                <path d="M170 110 C 240 144, 280 156, 360 156"/>
+              </g>
+              <rect x="360" y="26" width="180" height="36" class="wash rule-stroke" stroke-width="1.1" rx="3"/>
+              <text x="450" y="49" text-anchor="middle" font-family="Source Serif 4, serif" font-size="12.5" class="ink-soft">Lista de bullets</text>
+              <rect x="360" y="82" width="180" height="36" class="wash rule-stroke" stroke-width="1.1" rx="3"/>
+              <text x="450" y="105" text-anchor="middle" font-family="Source Serif 4, serif" font-size="12.5" class="ink-soft">Tabela markdown</text>
+              <rect x="360" y="138" width="180" height="36" class="accent-stroke" stroke-width="1.4" rx="3"/>
+              <text x="450" y="161" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" class="accent">JSON estruturado</text>
+              <text x="582" y="96" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="0.5" class="faint">O DESTINO</text>
+              <text x="582" y="112" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="0.5" class="faint">DEFINE</text>
+            </svg>
+          </figure>
+
+          <div class="prose">
+            <p data-inema-block="m1-1-t4-p3">Veja a diferenca entre deixar a forma em aberto e fixar o esquema:</p>
+            <div class="codeblock"><span class="c"># Aberto — o modelo escolhe a forma (e adiciona cortesia)</span>
+Analise o sentimento deste comentario.
+
+<span class="c"># Esquema fixo — pronto para um parser consumir</span>
+<span class="k">Tarefa:</span> classifique o sentimento do comentario.
+<span class="k">Formato:</span> responda APENAS com JSON, sem texto ao redor:
+{ "sentimento": "positivo" | "neutro" | "negativo", "confianca": 0.0 }</div>
+          </div>
+
+          <div class="predict">
+            <p class="lbl">Pare e preveja</p>
+            <p>Voce vai enviar a resposta para outro programa processar automaticamente. Qual dos tres formatos
+              da figura voce pede &mdash; e por que os outros dois dao problema?</p>
+            <details>
+              <summary>Ver uma resposta possivel</summary>
+              <p class="answer"><strong>JSON com chaves fixas.</strong> Lista e tabela sao otimas para olhos
+                humanos, mas exigem um parser fragil e toleram variacao de forma; JSON com esquema declarado e
+                valores permitidos e o unico que um programa le sem adivinhar.</p>
+            </details>
+          </div>
+        </section>
+
+        <!-- ============================= SECAO 5 ============================= -->
+        <section id="topico-5"
+                 data-inema-topic="modulo-1-1#topico-5"
+                 data-inema-module="1-1"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">Secao 5 de 7</span><span>&middot;</span><span>Exemplos</span>
+          </div>
+          <h2 class="head"><span class="num">5.</span>Ensine com poucos exemplos</h2>
+
+          <div class="prose">
+            <p class="lede" data-inema-block="m1-1-t5-p1">Mostrar um ou dois <em>exemplos resolvidos</em>
+              (few-shot) ensina o padrao melhor do que paragrafos de instrucao. O modelo aprende o formato, o tom
+              e o nivel de detalhe imitando a demonstracao &mdash; e exemplos costumam ser mais curtos do que
+              descrever todas as regras em palavras. Quando voce nao consegue <em>explicar</em> uma preferencia
+              de estilo, muitas vezes consegue <em>mostra-la</em>.</p>
+
+            <p data-inema-block="m1-1-t5-p2">Os exemplos carregam o que a instrucao deixa implicito. Se os seus
+              pares de entrada e saida sao curtos, diretos e no tom certo, a nova entrada herda exatamente isso.
+              Por isso vale escolher exemplos que sejam <em>tipicos</em> do caso real &mdash; e nao os mais
+              faceis &mdash; e cobrir ao menos um caso de borda quando ele importa.<span class="sidenote-ref">5</span></p>
+
+            <h3 class="sub">Quanto e suficiente?</h3>
+
+            <p data-inema-block="m1-1-t5-p3">Para a maioria das tarefas de classificacao e formatacao,
+              <strong>dois a cinco exemplos</strong> ja capturam o padrao. Acrescentar mais raramente ajuda e
+              gasta a janela de contexto &mdash; comece pequeno e so adicione um exemplo quando ele corrigir um
+              erro que voce viu de fato na saida.</p>
+          </div>
+
+          <figure class="figure">
+            <figcaption><span class="fig-n">Fig. 5</span> &middot; Os pares resolvidos sao o <b>molde</b>; a entrada nova herda a forma</figcaption>
+            <svg class="diagram" viewBox="0 0 720 196" role="img"
+                 aria-label="Diagrama: dois pares de entrada e saida servem de molde; a nova entrada e respondida no mesmo padrao demonstrado.">
+              <text x="135" y="30" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1.2" class="faint">EXEMPLOS (MOLDE)</text>
+              <rect x="40" y="46" width="78" height="32" class="wash rule-stroke" stroke-width="1.2" rx="3"/>
+              <text x="79" y="67" text-anchor="middle" font-family="Source Serif 4, serif" font-size="12" class="ink-soft">in 1</text>
+              <path d="M118 62 H 152" class="rule-stroke" stroke-width="1.6"/>
+              <path d="M152 62 l -7 -4 m 7 4 l -7 4" class="rule-stroke" stroke-width="1.6"/>
+              <rect x="152" y="46" width="78" height="32" class="wash rule-stroke" stroke-width="1.2" rx="3"/>
+              <text x="191" y="67" text-anchor="middle" font-family="Source Serif 4, serif" font-size="12" class="ink-soft">out 1</text>
+              <rect x="40" y="92" width="78" height="32" class="wash rule-stroke" stroke-width="1.2" rx="3"/>
+              <text x="79" y="113" text-anchor="middle" font-family="Source Serif 4, serif" font-size="12" class="ink-soft">in 2</text>
+              <path d="M118 108 H 152" class="rule-stroke" stroke-width="1.6"/>
+              <path d="M152 108 l -7 -4 m 7 4 l -7 4" class="rule-stroke" stroke-width="1.6"/>
+              <rect x="152" y="92" width="78" height="32" class="wash rule-stroke" stroke-width="1.2" rx="3"/>
+              <text x="191" y="113" text-anchor="middle" font-family="Source Serif 4, serif" font-size="12" class="ink-soft">out 2</text>
+              <line x1="300" y1="34" x2="300" y2="158" class="rule-stroke" stroke-width="1" stroke-dasharray="4 4"/>
+              <rect x="340" y="72" width="96" height="36" class="accent-stroke" stroke-width="1.3" rx="3"/>
+              <text x="388" y="95" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="14" class="ink">in nova</text>
+              <path d="M436 90 H 482" class="accent-stroke" stroke-width="2"/>
+              <path d="M482 90 l -7 -4 m 7 4 l -7 4" class="accent-stroke" stroke-width="2"/>
+              <rect x="482" y="66" width="198" height="48" fill="url(#hatch1)" class="accent-stroke" stroke-width="1.3" rx="3"/>
+              <text x="581" y="88" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="15" class="ink">out no mesmo</text>
+              <text x="581" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" class="accent">padrao</text>
+            </svg>
+          </figure>
+
+          <details class="go-deeper">
+            <summary><span class="chev">&#9656;</span> Indo mais fundo: quando o exemplo atrapalha
+              <span class="opt">opcional</span></summary>
+            <div class="inner">
+              <p>Camada opcional. Exemplos sao poderosos justamente porque o modelo os imita &mdash; e e ai que
+                moram as armadilhas.</p>
+              <p>Se todos os seus exemplos compartilham um tracinho acidental (sempre comecam com maiuscula, todos
+                tem exatamente tres itens, todos sao do mesmo dominio), o modelo pode tratar esse acidente como
+                <em>regra</em> e reproduzi-lo onde nao cabe. Da mesma forma, um exemplo enviesado vira um vies
+                sistematico na saida. A pratica saudavel: varie o que deve variar, fixe so o que e regra de fato,
+                e revise se a saida nova nao herdou um padrao que voce nao quis ensinar.</p>
+            </div>
+          </details>
+        </section>
+
+        <!-- ============================= SECAO 6 ============================= -->
+        <section id="topico-6"
+                 data-inema-topic="modulo-1-1#topico-6"
+                 data-inema-module="1-1"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">Secao 6 de 7</span><span>&middot;</span><span>Iteracao</span>
+          </div>
+          <h2 class="head"><span class="num">6.</span>Itere lendo a saida</h2>
+
+          <div class="prose">
+            <p class="lede" data-inema-block="m1-1-t6-p1">O primeiro resultado raramente e o final &mdash; e tudo
+              bem. A habilidade que separa quem usa bem de quem se frustra nao e acertar de primeira: e <em>ler a
+              saida como diagnostico</em>. Cada resposta imperfeita aponta, com precisao, qual peca do briefing
+              estava vaga. Voce nao reescreve tudo; voce conserta a peca e tenta de novo.</p>
+
+            <p data-inema-block="m1-1-t6-p2">Ha uma pergunta unica que destrava quase todo caso ruim:
+              <strong>o que, na minha saida, eu nao pedi explicitamente?</strong> Se a resposta veio longa
+              demais, faltou um limite de tamanho. Se veio no tom errado, faltou papel ou leitor. Se inventou um
+              fato, faltou restringir as fontes ou pedir verificacao. O defeito da saida e um mapa que aponta de
+              volta para a peca ausente do prompt.<span class="sidenote-ref">6</span></p>
+
+            <h3 class="sub">Mude uma coisa de cada vez</h3>
+
+            <p data-inema-block="m1-1-t6-p3">Quando voce altera tres coisas no prompt entre uma tentativa e outra
+              e a saida melhora, voce nao sabe qual delas funcionou &mdash; e nao consegue repetir o acerto. Trate
+              cada iteracao como um pequeno experimento: mude uma variavel, leia o efeito, decida. E mais lento por
+              tentativa, porem muito mais rapido ate o resultado estavel.</p>
+          </div>
+
+          <figure class="figure">
+            <figcaption><span class="fig-n">Fig. 6</span> &middot; O laco de iteracao: <b>ler o defeito</b> aponta a peca ausente</figcaption>
+            <svg class="diagram" viewBox="0 0 720 210" role="img"
+                 aria-label="Diagrama em laco: prompt gera saida; ler o defeito da saida indica a peca ausente, que volta ao prompt; o ciclo se repete ate estabilizar.">
+              <rect x="40" y="84" width="130" height="48" fill="url(#hatch1)" class="accent-stroke" stroke-width="1.2" rx="3"/>
+              <text x="105" y="106" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="16" class="ink">Prompt</text>
+              <text x="105" y="123" text-anchor="middle" font-family="Source Serif 4, serif" font-size="10.5" class="ink-soft">cinco pecas</text>
+              <path d="M170 108 H 270" class="accent-stroke" stroke-width="1.8"/>
+              <path d="M270 108 l -7 -4 m 7 4 l -7 4" class="accent-stroke" stroke-width="1.8"/>
+              <rect x="270" y="84" width="130" height="48" class="wash rule-stroke" stroke-width="1.2" rx="3"/>
+              <text x="335" y="106" text-anchor="middle" font-family="Spectral, serif" font-style="italic" font-size="16" class="ink-soft">Saida</text>
+              <text x="335" y="123" text-anchor="middle" font-family="Source Serif 4, serif" font-size="10.5" class="faint">com um defeito</text>
+              <path d="M400 108 H 500" class="rule-stroke" stroke-width="1.8"/>
+              <path d="M500 108 l -7 -4 m 7 4 l -7 4" class="rule-stroke" stroke-width="1.8"/>
+              <rect x="500" y="78" width="180" height="60" class="accent-stroke" stroke-width="1.2" rx="3"/>
+              <text x="590" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" letter-spacing="0.6" class="accent">O QUE EU NAO PEDI?</text>
+              <text x="590" y="118" text-anchor="middle" font-family="Source Serif 4, serif" font-size="11" class="ink-soft">= a peca ausente</text>
+              <path d="M590 138 C 590 184, 105 184, 105 138" fill="none" class="mark-stroke" stroke-width="1.4" stroke-dasharray="4 4"/>
+              <path d="M105 138 l -5 7 m 5 -7 l 6 6" fill="none" class="mark-stroke" stroke-width="1.4"/>
+              <text x="350" y="178" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" letter-spacing="1.2" class="mark-fill">RECOLOQUE A PECA E TENTE DE NOVO</text>
+            </svg>
+          </figure>
+
+          <div class="predict">
+            <p class="lbl">Pare e preveja</p>
+            <p>Sua saida veio coerente, mas citou um numero que voce desconfia ser inventado. Antes de reescrever:
+              qual peca do briefing voce ajusta primeiro?</p>
+            <details>
+              <summary>Ver uma resposta possivel</summary>
+              <p class="answer">A <strong>restricao de fonte</strong> no contexto &mdash; pedir que use apenas o
+                material fornecido e marque o que nao puder confirmar &mdash; mais um pedido de
+                <em>verificacao</em> no formato ("liste cada afirmacao com a fonte"). O defeito "numero suspeito"
+                aponta para fonte/verificacao, nao para a tarefa.</p>
+            </details>
+          </div>
+        </section>
+
+        <!-- ============================= SECAO 7 ============================= -->
+        <section id="topico-7"
+                 data-inema-topic="modulo-1-1#topico-7"
+                 data-inema-module="1-1"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">Secao 7 de 7</span><span>&middot;</span><span>Checklist</span>
+          </div>
+          <h2 class="head"><span class="num">7.</span>Monte seu checklist de revisao</h2>
+
+          <div class="prose">
+            <p class="lede" data-inema-block="m1-1-t7-p1">Tudo o que vimos cabe numa lista curta que voce passa
+              por cima de qualquer prompt antes de envia-lo &mdash; e de novo quando a saida desaponta. Nao e
+              burocracia: e o mesmo laco da Secao 6, so que <em>antecipado</em>. A maioria dos defeitos some
+              quando voce confere as cinco pecas uma vez, na ordem.</p>
+
+            <p data-inema-block="m1-1-t7-p2">Use a lista nas duas direcoes. <strong>Antes</strong> de enviar, ela
+              evita o resultado morno. <strong>Depois</strong>, ela vira diagnostico: o defeito na saida aponta a
+              linha exata que ficou vaga. Com o tempo, voce para de consultar a lista de forma consciente &mdash;
+              ela vira o jeito como voce le um pedido.<span class="sidenote-ref">7</span></p>
+          </div>
+
+          <figure class="figure">
+            <figcaption><span class="fig-n">Fig. 7</span> &middot; O checklist das <b>cinco pecas</b>, na ordem de revisao</figcaption>
+            <svg class="diagram" viewBox="0 0 720 234" role="img"
+                 aria-label="Diagrama de checklist: cinco linhas com caixa marcada, uma para cada peca — contexto, tarefa, formato, exemplos e iteracao — com a pergunta-guia de cada uma.">
+              <g font-family="Source Serif 4, serif">
+                <g>
+                  <rect x="40" y="24" width="18" height="18" class="accent-stroke" stroke-width="1.6" rx="3"/>
+                  <path d="M44 33 l3.5 3.5 L54 29" class="accent-stroke" stroke-width="1.8" fill="none"/>
+                  <text x="74" y="38" font-family="Spectral, serif" font-style="italic" font-size="16" class="ink">Contexto</text>
+                  <text x="270" y="38" font-size="12.5" class="ink-soft">quem fala, para quem, o que muda a resposta?</text>
+                </g>
+                <g>
+                  <rect x="40" y="62" width="18" height="18" class="accent-stroke" stroke-width="1.6" rx="3"/>
+                  <path d="M44 71 l3.5 3.5 L54 67" class="accent-stroke" stroke-width="1.8" fill="none"/>
+                  <text x="74" y="76" font-family="Spectral, serif" font-style="italic" font-size="16" class="ink">Tarefa</text>
+                  <text x="270" y="76" font-size="12.5" class="ink-soft">um verbo de acao, quantificado, sem empilhar?</text>
+                </g>
+                <g>
+                  <rect x="40" y="100" width="18" height="18" class="accent-stroke" stroke-width="1.6" rx="3"/>
+                  <path d="M44 109 l3.5 3.5 L54 105" class="accent-stroke" stroke-width="1.8" fill="none"/>
+                  <text x="74" y="114" font-family="Spectral, serif" font-style="italic" font-size="16" class="ink">Formato</text>
+                  <text x="270" y="114" font-size="12.5" class="ink-soft">a forma que o destino consome, sem texto a toa?</text>
+                </g>
+                <g>
+                  <rect x="40" y="138" width="18" height="18" class="accent-stroke" stroke-width="1.6" rx="3"/>
+                  <path d="M44 147 l3.5 3.5 L54 143" class="accent-stroke" stroke-width="1.8" fill="none"/>
+                  <text x="74" y="152" font-family="Spectral, serif" font-style="italic" font-size="16" class="ink">Exemplos</text>
+                  <text x="270" y="152" font-size="12.5" class="ink-soft">poucos, tipicos, sem padrao acidental?</text>
+                </g>
+                <g>
+                  <rect x="40" y="176" width="18" height="18" class="accent-stroke" stroke-width="1.6" rx="3"/>
+                  <path d="M44 185 l3.5 3.5 L54 181" class="accent-stroke" stroke-width="1.8" fill="none"/>
+                  <text x="74" y="190" font-family="Spectral, serif" font-style="italic" font-size="16" class="ink">Iteracao</text>
+                  <text x="270" y="190" font-size="12.5" class="ink-soft">li a saida? o que nela eu nao pedi de proposito?</text>
+                </g>
+              </g>
+              <line x1="40" y1="212" x2="680" y2="212" class="rule-stroke" stroke-width="1"/>
+              <text x="40" y="228" font-family="IBM Plex Mono, monospace" font-size="9.5" letter-spacing="1.2" class="faint">CINCO LINHAS — ANTES DE ENVIAR E DEPOIS DE LER</text>
+            </svg>
+          </figure>
+
+          <div class="prose">
+            <p data-inema-block="m1-1-t7-p3">Guarde este modulo como uma unica frase: <em>um prompt e um briefing,
+              e quase todo resultado ruim e uma peca ausente que a saida te ajuda a encontrar.</em> O proximo
+              modulo pega esse laco e o aplica a tarefas reais, da ideia solta ate um prompt que voce coloca em
+              producao.</p>
+          </div>
+
+          <details class="go-deeper">
+            <summary><span class="chev">&#9656;</span> Indo mais fundo: do checklist a um template reutilizavel
+              <span class="opt">opcional</span></summary>
+            <div class="inner">
+              <p>Camada opcional. Quando o mesmo tipo de pedido se repete, vale congelar o checklist num template
+                com lacunas.</p>
+              <div class="codeblock"><span class="c"># Template das cinco pecas (preencha as lacunas)</span>
+<span class="k">Contexto:</span> &lt;quem fala, para quem, restricoes&gt;
+<span class="k">Tarefa:</span> &lt;um verbo de acao, quantificado&gt;
+<span class="k">Formato:</span> &lt;a forma que o destino consome&gt;
+<span class="k">Exemplos:</span> &lt;1-3 pares tipicos in -&gt; out&gt;
+<span class="k"># Iteracao:</span> leia a saida e pergunte "o que eu nao pedi?"</div>
+              <p>Reaproveitar o template e o jeito mais direto de transformar o que voce aprendeu aqui em
+                velocidade no dia a dia &mdash; e e exatamente o ponto de partida do Modulo 1.2.</p>
+            </div>
+          </details>
+        </section>
+
+        <!-- ============================= KNOWLEDGE CHECK ============================= -->
+        <section class="check" aria-label="Auto-checagem">
+          <h2>Antes de seguir: quatro checagens rapidas</h2>
+          <p class="intro">Sem nota, sem placar. Responda de cabeca, depois revele para comparar.</p>
+
+          <details class="q-item">
+            <summary><span class="qn">01</span><span>Por que uma instrucao bem escrita ainda pode produzir uma resposta ruim?</span><span class="reveal">Revelar</span></summary>
+            <div class="ans"><p>Porque a redacao raramente e o problema: falta uma <em>peca</em> &mdash; quase
+              sempre contexto. Sem ela, o modelo preenche o buraco com o generico.</p></div>
+          </details>
+          <details class="q-item">
+            <summary><span class="qn">02</span><span>Qual teste decide se uma frase de contexto merece estar no prompt?</span><span class="reveal">Revelar</span></summary>
+            <div class="ans"><p>"Se eu apagar esta frase, a resposta certa muda?" Se nao muda, a frase esta
+              disputando atencao a toa e pode sair.</p></div>
+          </details>
+          <details class="q-item">
+            <summary><span class="qn">03</span><span>A resposta veio para alimentar outro programa. Que formato pedir?</span><span class="reveal">Revelar</span></summary>
+            <div class="ans"><p>JSON com chaves fixas e valores permitidos, e "responda apenas com isto". Lista e
+              tabela servem ao olho humano; so o esquema declarado um parser le sem adivinhar.</p></div>
+          </details>
+          <details class="q-item">
+            <summary><span class="qn">04</span><span>A saida desapontou. Qual e a pergunta unica que destrava a iteracao?</span><span class="reveal">Revelar</span></summary>
+            <div class="ans"><p>"O que, na minha saida, eu nao pedi explicitamente?" O defeito aponta a peca
+              ausente &mdash; conserte essa peca, mude uma coisa de cada vez, tente de novo.</p></div>
+          </details>
+        </section>
+
+        <!-- ============================= MINHA JORNADA (painel consolidado) ============================= -->
+        <section class="journey" aria-label="Minha jornada — progresso consolidado">
+          <div class="journey-top">
+            <h2><span class="ico">&#10087;</span> Minha jornada</h2>
+            <button class="journey-cta" type="button" data-inema-journey-open>Abrir caderno &rarr;</button>
+          </div>
+          <div class="journey-body">
+            <div class="jstat">
+              <div class="k">Neste modulo</div>
+              <div class="v" data-inema-meter="modulo:1-1">
+                <span data-inema-meter-frac><strong>0</strong> de 7</span> <span class="nm">secoes lidas</span>
+                <div class="progress-line"><span class="progress-line__fill" data-inema-meter-fill></span></div>
+              </div>
+            </div>
+            <div class="jstat">
+              <div class="k">Na trilha 1</div>
+              <div class="v" data-inema-meter="trilha:1">
+                <span data-inema-meter-frac><strong>0</strong> de 14</span> <span class="nm">topicos</span>
+                <div class="progress-line"><span class="progress-line__fill" data-inema-meter-fill></span></div>
+              </div>
+            </div>
+            <div class="jstat">
+              <div class="k">No curso</div>
+              <div class="v" data-inema-meter="curso">
+                <span data-inema-meter-frac><strong>0</strong> de 14</span> <span class="nm">percorrido</span>
+                <div class="progress-line"><span class="progress-line__fill" data-inema-meter-fill></span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- proxima acao (UMA clara) -->
+        <div class="nextup">
+          <div class="txt">
+            <div class="k">Continuar</div>
+            <div class="t">Modulo 1.2 &mdash; Da ideia ao prompt em producao</div>
+          </div>
+          <a class="go" href="modulo-1-2.html">Proximo &rarr;</a>
+        </div>
+
+      </article>
+
+      <!-- ============================= TRILHO DE MARGEM ============================= -->
+      <aside class="margin-rail" aria-label="Margem: notas de autor, definicoes e seu painel de aprendizado">
+
+        <!-- ---- SECAO 1: painel do aluno (vazio; learn.js preenche) + sidenotes de autor ---- -->
+        <aside data-inema-rail="modulo-1-1#topico-1"></aside>
+
+        <aside class="sidenote" data-kind="definicao">
+          <div class="tag">Definicao</div>
+          <b>Briefing.</b> Documento curto que orienta um trabalho: contexto, objetivo, restricoes e formato
+          esperado. Pedir bem a um modelo e, basicamente, escrever um bom briefing.
+        </aside>
+        <aside class="sidenote" data-kind="fonte">
+          <div class="tag">Fonte</div>
+          A ideia de tratar o prompt como pedido estruturado aparece nos guias de prompting da Anthropic e da
+          OpenAI; o metodo "pare e preveja" vem de <i>Just JavaScript</i>, de Dan Abramov.
+          <div class="src-line">docs.anthropic.com &middot; justjavascript.com</div>
+        </aside>
+        <aside class="sidenote" data-kind="fundo">
+          <div class="tag">Indo mais fundo</div>
+          "Morno" tem nome tecnico: quando o contexto e vago, a <i>distribuicao de continuacoes</i> provaveis
+          fica larga e o modelo regride a media. Detalhe completo no bloco <i>Indo mais fundo</i> da secao.
+        </aside>
+
+        <!-- ---- SECAO 2 ---- -->
+        <aside data-inema-rail="modulo-1-1#topico-2"></aside>
+
+        <aside class="sidenote" data-kind="definicao">
+          <div class="tag">Definicao</div>
+          <b>Papel.</b> A perspectiva de quem responde ("voce e um revisor tecnico"). Nao adiciona conhecimento;
+          <i>seleciona</i> registro, nivel de detalhe e exemplos &mdash; estreitando o leque antes da tarefa.
+        </aside>
+        <aside class="sidenote" data-kind="fundo">
+          <div class="tag">Indo mais fundo</div>
+          Prefira o papel <i>funcional</i> ("um verificador de fatos") ao papel <i>persona</i> ("a Marie Curie"):
+          o primeiro muda o criterio de qualidade, o segundo so muda o tom.
+        </aside>
+
+        <!-- ---- SECAO 3 ---- -->
+        <aside data-inema-rail="modulo-1-1#topico-3"></aside>
+
+        <aside class="sidenote" data-kind="fundo">
+          <div class="tag">Indo mais fundo</div>
+          Verbos que <i>abrem</i> (explore, aborde, discorra) deixam o modelo escolher a tarefa; verbos que
+          <i>fecham</i> (liste, classifique, extraia, reescreva em N palavras) a entregam pronta.
+        </aside>
+        <aside class="sidenote" data-kind="fonte">
+          <div class="tag">Fonte</div>
+          A nocao de "verbo de acao + quantificacao" e um lugar-comum dos guias de prompting praticos; a forma de
+          "um pedido por turno" ecoa o principio de responsabilidade unica do design de software.
+        </aside>
+
+        <!-- ---- SECAO 4 ---- -->
+        <aside data-inema-rail="modulo-1-1#topico-4"></aside>
+
+        <aside class="sidenote" data-kind="definicao">
+          <div class="tag">Definicao</div>
+          <b>Esquema.</b> A forma exata da resposta &mdash; chaves, tipos e valores permitidos. Declarar o esquema
+          e pedir "apenas isto" e o que torna a saida consumivel por um programa sem parser fragil.
+        </aside>
+        <aside class="sidenote" data-kind="fundo">
+          <div class="tag">Indo mais fundo</div>
+          Cortesia ("Claro! Aqui esta...") vira bug a jusante: o parser tenta ler aquilo como dado. Pedir "sem
+          texto ao redor" elimina a classe inteira de erros de integracao.
+        </aside>
+
+        <!-- ---- SECAO 5 ---- -->
+        <aside data-inema-rail="modulo-1-1#topico-5"></aside>
+
+        <aside class="sidenote" data-kind="definicao">
+          <div class="tag">Definicao</div>
+          <b>Few-shot.</b> Incluir alguns exemplos resolvidos (entrada -&gt; saida) no proprio prompt. O modelo
+          imita o padrao demonstrado &mdash; formato, tom e nivel &mdash; em vez de seguir so a descricao.
+        </aside>
+        <aside class="sidenote" data-kind="fundo">
+          <div class="tag">Indo mais fundo</div>
+          Cuidado com o padrao acidental: se todos os exemplos tem tres itens ou sao do mesmo dominio, o modelo
+          pode tratar o acidente como regra. Varie o que deve variar; fixe so o que e regra de fato.
+        </aside>
+
+        <!-- ---- SECAO 6 ---- -->
+        <aside data-inema-rail="modulo-1-1#topico-6"></aside>
+
+        <aside class="sidenote" data-kind="definicao">
+          <div class="tag">Definicao</div>
+          <b>Iteracao.</b> O laco curto ler a saida -&gt; identificar a peca ausente -&gt; recoloca-la no prompt
+          -&gt; repetir. E onde mora a maior parte da engenharia de prompt &mdash; nao no acerto de primeira.
+        </aside>
+        <aside class="sidenote" data-kind="fundo">
+          <div class="tag">Indo mais fundo</div>
+          Mude <i>uma</i> variavel por tentativa. Alterar tres coisas e ver a saida melhorar nao diz qual delas
+          funcionou &mdash; e voce nao consegue repetir o acerto.
+        </aside>
+
+        <!-- ---- SECAO 7 ---- -->
+        <aside data-inema-rail="modulo-1-1#topico-7"></aside>
+
+        <aside class="sidenote" data-kind="fundo">
+          <div class="tag">Indo mais fundo</div>
+          O checklist roda nas duas direcoes: <i>antes</i> de enviar evita o resultado morno; <i>depois</i> de
+          ler vira diagnostico, apontando a linha exata que ficou vaga.
+        </aside>
+        <aside class="sidenote" data-kind="fonte" style="margin-bottom:0">
+          <div class="tag">Fonte</div>
+          A sintese em uma frase &mdash; "prompt e briefing; resultado ruim e peca ausente" &mdash; e o fio
+          condutor deste modulo e a ponte para o Modulo 1.2.
+        </aside>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- COLOFAO -->
+  <footer class="colophon">
+    <span>INEMA.CLUB &middot; Caderno do aluno</span>
+    <span class="pg">Modulo 1.1 &mdash; folio i</span>
+    <span>Composto em Spectral &amp; Source Serif 4</span>
+  </footer>
+
+  <!-- ===================================================================
+       FIM DO <body>: carrega + inicializa learn.js (caminho RELATIVO).
+       Idempotente: chamar init() mais de uma vez nao duplica listeners.
+       =================================================================== -->
+  <script src="../../assets/learn.js"></script>
+  <script>
+    if (window.INEMA && typeof window.INEMA.init === 'function') {
+      window.INEMA.init();
+    }
+  </script>
+</body>
+</html>

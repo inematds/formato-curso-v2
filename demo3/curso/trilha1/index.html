@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="papel">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ===================================================================
+       1) ANTI-FOUC — script BLOQUEANTE, PRIMEIRO no <head>, ANTES das fontes
+          e do learn.css. Le inema.prefs (global, cross-curso) e aplica
+          data-theme + color-scheme + --measure/--leading/--fontscale +
+          data-font/--font-disp/--font-body ANTES do primeiro paint.
+          try/catch total => default papel no erro (preserva a marca INEMA).
+          (REL = "../.." — caminho ate a pasta com assets/.)
+       =================================================================== -->
+  <script>
+  (function () {
+    try {
+      var html = document.documentElement;
+      var DEF = { theme: 'papel', font: 'serif', fontScale: 100, lineWidth: 66, leading: 1.66 };
+      function clone(o) { var r = {}; for (var x in o) r[x] = o[x]; return r; }
+      var p = clone(DEF);
+      try {
+        var raw = localStorage.getItem('inema.prefs');
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            for (var k in DEF) if (parsed[k] != null) p[k] = parsed[k];
+          }
+        }
+      } catch (e) { p = clone(DEF); }
+
+      var THEMES = {
+        'papel':  { attr: 'papel',  cs: 'light' },
+        'sepia':  { attr: 'sepia',  cs: 'light' },
+        'escuro': { attr: 'escuro', cs: 'dark'  }
+      };
+      var t = THEMES[p.theme] || THEMES['papel'];
+      html.setAttribute('data-theme', t.attr);
+      html.style.colorScheme = t.cs;
+
+      var font = (p.font === 'sans' || p.font === 'hyperlegible') ? p.font : 'serif';
+      html.setAttribute('data-font', font);
+
+      var s = html.style;
+
+      var scale = (+p.fontScale || 100);
+      s.setProperty('--fontscale', scale + '%');
+      html.setAttribute('data-fontscale', String(scale));
+
+      var lw = (+p.lineWidth || 66);
+      s.setProperty('--measure', lw + 'ch');
+      html.setAttribute('data-line-width', lw <= 62 ? 'estreito' : (lw >= 70 ? 'largo' : 'medio'));
+
+      var lh = (+p.leading || 1.66);
+      s.setProperty('--leading', lh.toString());
+      html.setAttribute('data-leading', lh <= 1.66 ? 'compacto' : 'confortavel');
+
+      var DISP = {
+        serif: '"Spectral", Georgia, "Times New Roman", serif',
+        sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        hyperlegible: '"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif'
+      };
+      var BODY = {
+        serif: '"Source Serif 4", Georgia, "Times New Roman", serif',
+        sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        hyperlegible: '"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif'
+      };
+      s.setProperty('--font-disp', DISP[font] || DISP.serif);
+      s.setProperty('--font-body', BODY[font] || BODY.serif);
+    } catch (err) {
+      try {
+        document.documentElement.setAttribute('data-theme', 'papel');
+        document.documentElement.style.colorScheme = 'light';
+      } catch (e) {}
+    }
+  })();
+  </script>
+
+  <!-- 2) Identidade do curso + manifesto (courseId estavel + estrutura completa) -->
+  <meta name="inema-course" content="demo3" />
+  <script type="application/json" data-inema-manifest>
+  {
+    "course": "demo3",
+    "tracks": [
+      { "n": "1", "title": "Fundamentos", "modules": [
+        { "id": "1-1", "title": "Fundamentos de Engenharia de Prompts", "topics": 7, "href": "modulo-1-1.html" },
+        { "id": "1-2", "title": "Da ideia ao prompt em producao", "topics": 7, "href": "modulo-1-2.html" }
+      ] }
+    ]
+  }
+  </script>
+
+  <title>Trilha 1 — Fundamentos | Curso Demo v3</title>
+
+  <!-- 3) Fontes (DEPOIS do anti-FOUC) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400;1,8..60,500&family=IBM+Plex+Mono:wght@400;500&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <!-- 4) Folha de estilos da camada de aprendizagem v3 (caminho RELATIVO) -->
+  <link rel="stylesheet" href="../../assets/learn.css" />
+</head>
+
+<body>
+
+  <!-- SKIP LINK (primeiro focavel) -->
+  <a class="skip" href="#reading">Pular para o conteudo</a>
+
+  <!-- ===================== READER BAR — controles minimos ===================== -->
+  <div class="reader-bar">
+    <div class="reader-inner">
+      <a class="wordmark" href="../../index.html">INEMA<span class="dot">.</span><span class="club">CLUB</span></a>
+      <div class="reader-controls" data-inema-appearance>
+        <span class="rc-read"><span data-inema-meter="trilha:1"><span data-inema-meter-frac><strong>0</strong> de 14</span></span> lidas</span>
+        <div class="rc-group" role="group" aria-label="Tema de leitura">
+          <button type="button" class="rc-btn" data-inema-set-theme="papel" aria-pressed="true">Papel</button>
+          <button type="button" class="rc-btn" data-inema-set-theme="sepia" aria-pressed="false">Sepia</button>
+          <button type="button" class="rc-btn" data-inema-set-theme="escuro" aria-pressed="false">Escuro</button>
+        </div>
+        <div class="rc-group" role="group" aria-label="Fonte de leitura">
+          <button type="button" class="rc-btn" data-inema-set-font="serif" aria-pressed="true">Serif</button>
+          <button type="button" class="rc-btn" data-inema-set-font="sans" aria-pressed="false">Sans</button>
+          <button type="button" class="rc-btn" data-inema-set-font="hyperlegible" aria-pressed="false" title="Atkinson Hyperlegible — legibilidade maxima">Aa&#8633;</button>
+        </div>
+        <div class="rc-group" role="group" aria-label="Tamanho do texto">
+          <button type="button" class="rc-btn" data-inema-set-fontscale="100" aria-pressed="true">A</button>
+          <button type="button" class="rc-btn" data-inema-set-fontscale="112" aria-pressed="false">A+</button>
+          <button type="button" class="rc-btn" data-inema-set-fontscale="125" aria-pressed="false">A++</button>
+        </div>
+        <div class="rc-group" role="group" aria-label="Largura da linha">
+          <button type="button" class="rc-btn" data-inema-set-linewidth="62" aria-pressed="false">Estreito</button>
+          <button type="button" class="rc-btn" data-inema-set-linewidth="66" aria-pressed="true">Medio</button>
+          <button type="button" class="rc-btn" data-inema-set-linewidth="70" aria-pressed="false">Largo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MASTHEAD + WAYFINDING ===================== -->
+  <header class="masthead">
+    <nav class="wayfind" aria-label="Onde voce esta">
+      <span><a href="../../index.html" style="text-decoration:none">Curso Demo</a></span>
+      <span class="sep">&middot;</span>
+      <span>Trilha <b>1</b> Fundamentos</span>
+      <span class="sep">&middot;</span>
+      <span>Indice da trilha</span>
+      <span class="sep">&middot;</span>
+      <button type="button" data-inema-journey-open>
+        Minha jornada <span class="inema-journey-badge" data-inema-journey-badge data-count="0">0</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ===================== SPREAD: coluna de leitura + trilho de margem ===================== -->
+  <main class="spread">
+    <div class="leaf">
+
+      <!-- ============================= COLUNA DE LEITURA ============================= -->
+      <article class="reading" id="reading">
+
+        <!-- abertura editorial da trilha -->
+        <p class="kicker">Trilha 1 &middot; Fundamentos</p>
+        <h1 class="module">O que e, de fato, <em>pedir bem</em> a um modelo</h1>
+        <p class="deck">Dois modulos curtos sobre uma unica habilidade: transformar uma vontade vaga
+          em uma instrucao que um modelo entende de primeira &mdash; e saber consertar quando nao entende.</p>
+
+        <!-- marcador de progresso discreto da trilha: "N de M" + 1 filete fino (sem 3 barras) -->
+        <p class="read-meta" data-inema-meter="trilha:1">
+          <span class="here" data-inema-meter-frac><strong>0</strong> de 14</span>
+          <span>secoes lidas nesta trilha</span>
+          <span class="progress-line"><span class="progress-line__fill" data-inema-meter-fill></span></span>
+        </p>
+
+        <!-- o "porque" da trilha — um paragrafo honesto, sem promessa de transformacao -->
+        <div class="prose">
+          <p class="lede" data-inema-block="t1-porque-p1">A maior parte da frustracao com modelos de linguagem nao
+            vem do modelo: vem do <em>pedido</em>. Pedimos vago e recebemos vago; pedimos sem contexto e o modelo
+            preenche o buraco com a media de tudo que ja viu. Esta trilha trata o prompt como aquilo que ele e &mdash;
+            um <em>briefing</em> curto, com pecas que ou estao la ou estao faltando. O Modulo 1.1 nomeia essas pecas
+            e o laco que as conserta; o Modulo 1.2 pega esse laco e o leva ate um prompt que voce coloca em uso de
+            verdade. Nao ha atalho nem formula magica aqui &mdash; ha um jeito mais claro de pedir, e a leitura
+            atenta de duas aulas basta para incorpora-lo.</p>
+        </div>
+
+        <!-- ===================== CURRICULO COMO INDICE REAL ===================== -->
+        <p class="toc-head" style="margin-top:var(--s7)">O percurso &mdash; dois modulos, na ordem</p>
+
+        <!-- ---- ENTRADA / MODULO 1.1 ---- -->
+        <section id="topico-1"
+                 data-inema-topic="modulo-1-1#indice"
+                 data-inema-module="1-1"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">Modulo 1.1</span><span>&middot;</span><span>7 secoes &middot; ~16 min</span>
+          </div>
+          <h2 class="head"><span class="num">1.1</span>Fundamentos de Engenharia de Prompts</h2>
+
+          <div class="prose">
+            <p data-inema-block="t1-m1-1-p1">Cobre a <em>anatomia</em> de um prompt: as cinco pecas que um pedido
+              completo carrega &mdash; contexto, tarefa, formato, exemplos e iteracao &mdash; e por que a peca
+              ausente, e quase nunca a redacao, e o que produz resultado morno. Voce aprende a definir papel e
+              contexto, a escrever a tarefa como um pedido unico e quantificado, a pedir o formato que o destino
+              consome, a ensinar com poucos exemplos e a ler a saida como diagnostico para iterar. Fecha com um
+              checklist de revisao que roda antes de enviar e depois de ler.</p>
+            <p data-inema-block="t1-m1-1-p2">
+              <a class="entry-link" href="modulo-1-1.html">Ler o Modulo 1.1 &rarr;</a>
+            </p>
+          </div>
+        </section>
+
+        <!-- ---- ENTRADA / MODULO 1.2 ---- -->
+        <section id="topico-2"
+                 data-inema-topic="modulo-1-2#indice"
+                 data-inema-module="1-2"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">Modulo 1.2</span><span>&middot;</span><span>7 secoes &middot; ~16 min</span>
+          </div>
+          <h2 class="head"><span class="num">1.2</span>Da ideia ao prompt em producao</h2>
+
+          <div class="prose">
+            <p data-inema-block="t1-m1-2-p1">Pega o laco do Modulo 1.1 e o aplica a tarefas reais: como sair de uma
+              ideia solta e chegar a um prompt estavel, congelado num <em>template</em> reutilizavel. Trata de
+              testar o prompt contra casos tipicos e de borda, de fixar o esquema da saida para que outro programa
+              a consuma sem parser fragil, e de versionar o que funcionou em vez de reescrever do zero a cada vez.
+              E onde a habilidade deixa de ser truque pontual e vira um processo que voce repete com confianca.</p>
+            <p data-inema-block="t1-m1-2-p2">
+              <a class="entry-link" href="modulo-1-2.html">Ler o Modulo 1.2 &rarr;</a>
+            </p>
+          </div>
+        </section>
+
+        <!-- indo mais fundo: divulgacao progressiva (opcional) -->
+        <details class="go-deeper">
+          <summary><span class="chev">&#9656;</span> Indo mais fundo: por que dois modulos, e nesta ordem
+            <span class="opt">opcional</span></summary>
+          <div class="inner">
+            <p>O caminho-feliz e linear: leia 1.1, depois 1.2. Esta camada e so para quem quer entender a
+              divisao &mdash; e pode ser pulada sem perda.</p>
+            <p>Separamos de proposito o <em>porque</em> do <em>como</em>. O Modulo 1.1 e um explainer calmo:
+              constroi a intuicao das cinco pecas e do laco de iteracao sem ainda te prender a nenhum fluxo de
+              trabalho. So depois, com essa intuicao no lugar, o Modulo 1.2 vira o <em>como</em> &mdash; o passo
+              a passo de levar um prompt da ideia ate producao. Misturar os dois e a receita classica do tutorial
+              que voce segue uma vez e nunca consegue repetir, porque nunca entendeu o principio por baixo.</p>
+            <p>Se voce ja domina a anatomia do prompt, pode comecar direto pelo 1.2 &mdash; mas o checklist do
+              fim do 1.1 e a ponte explicita para ele, entao vale ao menos passar o olho.</p>
+          </div>
+        </details>
+
+        <!-- proxima acao (UMA clara) -->
+        <div class="nextup">
+          <div class="txt">
+            <div class="k">Comecar pela base</div>
+            <div class="t">Modulo 1.1 &mdash; Fundamentos de Engenharia de Prompts</div>
+          </div>
+          <a class="go" href="modulo-1-1.html">Ler o primeiro &rarr;</a>
+        </div>
+
+      </article>
+
+      <!-- ============================= TRILHO DE MARGEM ============================= -->
+      <aside class="margin-rail" aria-label="Margem: notas de autor e seu painel de aprendizado">
+
+        <!-- ---- MODULO 1.1: painel do aluno (vazio; learn.js preenche) + sidenotes de autor ---- -->
+        <aside data-inema-rail="modulo-1-1#indice"></aside>
+
+        <aside class="sidenote" data-kind="definicao">
+          <div class="tag">Definicao</div>
+          <b>Trilha.</b> Um agrupamento curto de modulos em torno de uma habilidade. A Trilha 1 e a base &mdash;
+          tudo que vem depois assume que voce ja le um prompt como um briefing.
+        </aside>
+        <aside class="sidenote" data-kind="fundo">
+          <div class="tag">Indo mais fundo</div>
+          A ordem importa: 1.1 e o <i>porque</i> (a anatomia e o laco), 1.2 e o <i>como</i> (da ideia a producao).
+          Ler na ordem evita o tutorial que se segue uma vez e nunca se repete.
+        </aside>
+
+        <!-- ---- MODULO 1.2 ---- -->
+        <aside data-inema-rail="modulo-1-2#indice"></aside>
+
+        <aside class="sidenote" data-kind="definicao">
+          <div class="tag">Definicao</div>
+          <b>Producao.</b> Quando um prompt deixa de ser tentativa avulsa e passa a rodar de forma estavel &mdash;
+          template fixo, saida em esquema previsivel, testado em casos tipicos e de borda.
+        </aside>
+        <aside class="sidenote" data-kind="fonte" style="margin-bottom:0">
+          <div class="tag">Fonte</div>
+          O fio condutor &mdash; "prompt e briefing; resultado ruim e peca ausente" &mdash; atravessa os dois
+          modulos e ecoa os guias de prompting da Anthropic e da OpenAI.
+          <div class="src-line">docs.anthropic.com</div>
+        </aside>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- COLOFAO -->
+  <footer class="colophon">
+    <span>INEMA.CLUB &middot; Caderno do aluno</span>
+    <span class="pg">Trilha 1 &mdash; indice</span>
+    <span>Composto em Spectral &amp; Source Serif 4</span>
+  </footer>
+
+  <!-- ===================================================================
+       FIM DO <body>: carrega + inicializa learn.js (caminho RELATIVO).
+       Idempotente: chamar init() mais de uma vez nao duplica listeners.
+       =================================================================== -->
+  <script src="../../assets/learn.js"></script>
+  <script>
+    if (window.INEMA && typeof window.INEMA.init === 'function') {
+      window.INEMA.init();
+    }
+  </script>
+</body>
+</html>

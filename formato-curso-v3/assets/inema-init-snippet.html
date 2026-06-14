@@ -1,0 +1,28 @@
+<!--
+  INEMA · v3 · SNIPPET DE FIM DE <body> (carrega + inicializa learn.js)
+  ====================================================================
+  Cole isto IMEDIATAMENTE ANTES de </body>, depois de todo o conteudo.
+
+  - learn.js expoe window.INEMA (IIFE). E idempotente e re-entrant: pode rodar
+    em qualquer pagina (landing/trilha/modulo) e so ativa o que existe ali
+    (feature-detect por presenca de data-inema-*). Sem build, sem deps.
+  - INEMA.init() faz: probe de storage (modo efemero se bloqueado), le o
+    courseId do <meta name="inema-course">, re-aplica grifos, MONTA O PAINEL DO
+    ALUNO de cada secao (<aside data-inema-rail>: marcar lida, tenho uma duvida,
+    lista de grifos/notas na margem), hidrata medidores "N de M" + .progress-line
+    e o seletor de aparencia (tema/fonte/tamanho/largura/entrelinha).
+  - O anti-FOUC de tema ja rodou no <head> (script bloqueante) ANTES do paint;
+    INEMA.init() apenas reforca a consistencia via applyPrefs().
+  - Troque REL pelo caminho relativo da pasta assets (ex.: "." , ".." , "../..").
+
+  Opcoes aceitas por init(opts):
+    { courseId: "fep" }      // sobrescreve o <meta> (raro)
+    { autoResume: true }     // ja rola para "continuar de onde parei" no load
+-->
+<script src="REL/assets/learn.js"></script>
+<script>
+  // Inicializacao idempotente — chamar mais de uma vez nao duplica listeners.
+  if (window.INEMA && typeof window.INEMA.init === 'function') {
+    window.INEMA.init();
+  }
+</script>

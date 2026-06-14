@@ -1,0 +1,90 @@
+<!--
+  INEMA · v3 · SNIPPET DE <head> (anti-FOUC + CSS)
+  ================================================
+  Cole isto NO TOPO do <head>, ANTES de qualquer <style>/<link>/fonte.
+  O <script> e BLOQUEANTE de proposito: aplica o tema (data-theme) e as
+  variaveis de leitura ANTES do primeiro paint, matando o flash de tema (FOUC)
+  a cada navegacao.
+
+  v3 e CSS proprio (NAO Tailwind): nada de classe .dark. O eixo de leitura mora
+  inteiro em data-theme = papel (default) | sepia | escuro. O ACENTO e FIXO no
+  CSS (#2C5282) — nao ha pref de acento.
+
+  - Le inema.prefs (global, cross-curso). Se nao existir, usa o DEFAULT (papel).
+  - try/catch total: qualquer erro => default papel (preserva a marca INEMA).
+  - Independente do learn.js: se o modulo grande falhar, o tema ja foi aplicado.
+  - Troque REL pelo caminho relativo da pasta assets (ex.: "." , ".." , "../..").
+-->
+<script>
+(function () {
+  try {
+    var html = document.documentElement;
+    var DEF = { theme: 'papel', font: 'serif', fontScale: 100, lineWidth: 66, leading: 1.66 };
+    function clone(o) { var r = {}; for (var x in o) r[x] = o[x]; return r; }
+    var p = clone(DEF);
+    try {
+      var raw = localStorage.getItem('inema.prefs');
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          for (var k in DEF) if (parsed[k] != null) p[k] = parsed[k];
+        }
+      }
+    } catch (e) { p = clone(DEF); }
+
+    // tema -> data-theme + color-scheme (papel|sepia|escuro). Sem .dark.
+    var THEMES = {
+      'papel':  { attr: 'papel',  cs: 'light' },
+      'sepia':  { attr: 'sepia',  cs: 'light' },
+      'escuro': { attr: 'escuro', cs: 'dark'  }
+    };
+    var t = THEMES[p.theme] || THEMES['papel'];
+    html.setAttribute('data-theme', t.attr);
+    html.style.colorScheme = t.cs;
+
+    // fonte (serif|sans|hyperlegible) — o CSS troca --font-disp/--font-body
+    var font = (p.font === 'sans' || p.font === 'hyperlegible') ? p.font : 'serif';
+    html.setAttribute('data-font', font);
+
+    var s = html.style;
+
+    // fontscale em % no root: TODO rem escala junto (NUNCA px no root)
+    var scale = (+p.fontScale || 100);
+    s.setProperty('--fontscale', scale + '%');
+    html.setAttribute('data-fontscale', String(scale));
+
+    // medida (62-70ch) + slug que o CSS entende
+    var lw = (+p.lineWidth || 66);
+    s.setProperty('--measure', lw + 'ch');
+    html.setAttribute('data-line-width', lw <= 62 ? 'estreito' : (lw >= 70 ? 'largo' : 'medio'));
+
+    // entrelinha (multiplicador sem unidade) + slug
+    var lh = (+p.leading || 1.66);
+    s.setProperty('--leading', lh.toString());
+    html.setAttribute('data-leading', lh <= 1.66 ? 'compacto' : 'confortavel');
+
+    // familias diretas (reforco antes do paint; o CSS tambem troca por data-font)
+    var DISP = {
+      serif: '"Spectral", Georgia, "Times New Roman", serif',
+      sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+      hyperlegible: '"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif'
+    };
+    var BODY = {
+      serif: '"Source Serif 4", Georgia, "Times New Roman", serif',
+      sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+      hyperlegible: '"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif'
+    };
+    s.setProperty('--font-disp', DISP[font] || DISP.serif);
+    s.setProperty('--font-body', BODY[font] || BODY.serif);
+  } catch (err) {
+    // qualquer falha => default papel, preserva a marca
+    try {
+      document.documentElement.setAttribute('data-theme', 'papel');
+      document.documentElement.style.colorScheme = 'light';
+    } catch (e) {}
+  }
+})();
+</script>
+
+<!-- Folha de estilos da camada de aprendizagem v3 (temas papel/sepia/escuro, prosa, controles). -->
+<link rel="stylesheet" href="REL/assets/learn.css">

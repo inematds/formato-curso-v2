@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="papel">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ===================================================================
+       1) ANTI-FOUC — script BLOQUEANTE, PRIMEIRO no <head>, ANTES das fontes
+          e do learn.css. Le inema.prefs (global, cross-curso) e aplica
+          data-theme + color-scheme + --measure/--leading/--fontscale +
+          data-font/--font-disp/--font-body ANTES do primeiro paint.
+          try/catch total => default papel no erro (preserva a marca INEMA).
+          (REL = "." — index.html mora na raiz da pasta com assets/.)
+       =================================================================== -->
+  <script>
+  (function () {
+    try {
+      var html = document.documentElement;
+      var DEF = { theme: 'papel', font: 'serif', fontScale: 100, lineWidth: 66, leading: 1.66 };
+      function clone(o) { var r = {}; for (var x in o) r[x] = o[x]; return r; }
+      var p = clone(DEF);
+      try {
+        var raw = localStorage.getItem('inema.prefs');
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            for (var k in DEF) if (parsed[k] != null) p[k] = parsed[k];
+          }
+        }
+      } catch (e) { p = clone(DEF); }
+
+      var THEMES = {
+        'papel':  { attr: 'papel',  cs: 'light' },
+        'sepia':  { attr: 'sepia',  cs: 'light' },
+        'escuro': { attr: 'escuro', cs: 'dark'  }
+      };
+      var t = THEMES[p.theme] || THEMES['papel'];
+      html.setAttribute('data-theme', t.attr);
+      html.style.colorScheme = t.cs;
+
+      var font = (p.font === 'sans' || p.font === 'hyperlegible') ? p.font : 'serif';
+      html.setAttribute('data-font', font);
+
+      var s = html.style;
+
+      var scale = (+p.fontScale || 100);
+      s.setProperty('--fontscale', scale + '%');
+      html.setAttribute('data-fontscale', String(scale));
+
+      var lw = (+p.lineWidth || 66);
+      s.setProperty('--measure', lw + 'ch');
+      html.setAttribute('data-line-width', lw <= 62 ? 'estreito' : (lw >= 70 ? 'largo' : 'medio'));
+
+      var lh = (+p.leading || 1.66);
+      s.setProperty('--leading', lh.toString());
+      html.setAttribute('data-leading', lh <= 1.66 ? 'compacto' : 'confortavel');
+
+      var DISP = {
+        serif: '"Spectral", Georgia, "Times New Roman", serif',
+        sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        hyperlegible: '"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif'
+      };
+      var BODY = {
+        serif: '"Source Serif 4", Georgia, "Times New Roman", serif',
+        sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        hyperlegible: '"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif'
+      };
+      s.setProperty('--font-disp', DISP[font] || DISP.serif);
+      s.setProperty('--font-body', BODY[font] || BODY.serif);
+    } catch (err) {
+      try {
+        document.documentElement.setAttribute('data-theme', 'papel');
+        document.documentElement.style.colorScheme = 'light';
+      } catch (e) {}
+    }
+  })();
+  </script>
+
+  <!-- 2) Identidade do curso + manifesto (courseId estavel + estrutura completa) -->
+  <meta name="inema-course" content="demo3" />
+  <script type="application/json" data-inema-manifest>
+  {
+    "course": "demo3",
+    "tracks": [
+      { "n": "1", "title": "Fundamentos", "modules": [
+        { "id": "1-1", "title": "Fundamentos de Engenharia de Prompts", "topics": 7, "href": "curso/trilha1/modulo-1-1.html" },
+        { "id": "1-2", "title": "Da ideia ao prompt em producao", "topics": 7, "href": "curso/trilha1/modulo-1-2.html" }
+      ] }
+    ]
+  }
+  </script>
+
+  <title>Engenharia de Prompts &mdash; um curso que e uma obra, nao um infoproduto | INEMA</title>
+
+  <!-- 3) Fontes (DEPOIS do anti-FOUC) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400;1,8..60,500&family=IBM+Plex+Mono:wght@400;500&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <!-- 4) Folha de estilos da camada de aprendizagem v3 (caminho RELATIVO) -->
+  <link rel="stylesheet" href="./assets/learn.css" />
+
+  <!-- ===================================================================
+       5) Ajustes LOCAIS da landing. NAO introduzem nova cor decorativa: usam
+          os tokens existentes (--paper*, --ink*, --border, --accent UNICO).
+          So compoem a abertura tipografica, o indice de curriculo e a prova
+          social com os mesmos hairlines/tipografia do reader.
+       =================================================================== -->
+  <style>
+    /* HERO tipografico puro — sem mockup, sem selo, sem contador. */
+    .hero { margin: var(--s7) 0 var(--s8); }
+    .hero .lede-kicker {
+      font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--accent);
+      display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s5);
+    }
+    .hero .lede-kicker::after {
+      content: ""; flex: 1 1 auto; height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+    .hero h1 {
+      font-family: var(--font-disp); font-weight: 400;
+      font-size: clamp(2.0rem, 1.1rem + 3.0vw, 3.2rem);
+      line-height: 1.12; letter-spacing: -0.012em; color: var(--ink);
+      margin: 0 0 var(--s5); text-wrap: balance;
+    }
+    .hero h1 em { font-style: italic; }
+    .hero .sub {
+      font-size: clamp(1.1rem, 0.9rem + 0.6vw, 1.32rem);
+      line-height: 1.5; color: var(--ink-soft); max-width: 54ch;
+      margin: 0 0 var(--s6); font-family: var(--font-body);
+    }
+
+    /* CTA unico + entrada de baixo risco (lado a lado, depois empilha) */
+    .cta-row {
+      display: flex; flex-wrap: wrap; align-items: baseline;
+      gap: var(--s3) var(--s5); margin-top: var(--s5);
+    }
+    .cta-primary {
+      display: inline-flex; align-items: center; gap: var(--s3);
+      font-family: var(--font-body); font-size: 1.04rem; font-weight: 600;
+      text-decoration: none; color: var(--on-accent); background: var(--accent);
+      border: 1px solid var(--accent); border-radius: var(--radius, 4px);
+      padding: 0.7rem 1.25rem; line-height: 1;
+      transition: background 120ms ease;
+    }
+    .cta-primary:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
+    .cta-primary .arr { font-family: var(--mono); }
+    .cta-low {
+      font-family: var(--font-body); font-size: 0.98rem; color: var(--ink-soft);
+    }
+    .cta-low a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+    .cta-note {
+      display: block; margin-top: var(--s3);
+      font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.04em;
+      color: var(--ink-faint);
+    }
+
+    /* Marcador de percurso silencioso da landing (1 marcador + 1 barra fina) */
+    .stand {
+      margin: var(--s6) 0 0; padding-top: var(--s5);
+      border-top: 1px solid var(--border);
+      display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s5);
+    }
+    .stand .lbl { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.06em; color: var(--ink-faint); }
+    .stand [data-inema-meter] { display: inline-flex; align-items: center; gap: var(--s3); }
+    .stand [data-inema-meter-frac] { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-soft); }
+    .stand [data-inema-meter-frac] strong { color: var(--ink); font-weight: 600; }
+    .stand .progress-line {
+      width: 120px; height: 3px; border-radius: 3px;
+      background: var(--paper-deep, var(--border)); overflow: hidden;
+    }
+    .stand .progress-line__fill {
+      display: block; height: 100%; width: 0%;
+      background: var(--accent); transition: width 200ms ease;
+    }
+
+    /* Curriculo como INDICE — nao card colorido, nao bullet de beneficio. */
+    .curriculo { margin-top: var(--s5); }
+    .curriculo .track-line {
+      display: flex; align-items: baseline; gap: var(--s4);
+      padding-bottom: var(--s4); margin-bottom: var(--s5);
+      border-bottom: 1px solid var(--border);
+    }
+    .curriculo .track-tag {
+      font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--accent); white-space: nowrap;
+    }
+    .curriculo .track-title {
+      font-family: var(--font-disp); font-style: italic; font-weight: 400;
+      font-size: 1.3rem; color: var(--ink); margin: 0;
+    }
+    .curriculo .track-meta { font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faint); margin-left: auto; }
+
+    .idx-mod { margin: 0 0 var(--s7); }
+    .idx-mod .idx-head {
+      display: flex; align-items: baseline; gap: var(--s3);
+      font-family: var(--font-disp); margin: 0 0 var(--s3);
+    }
+    .idx-mod .idx-num {
+      font-family: var(--mono); font-size: 0.82rem; color: var(--ink-faint);
+      letter-spacing: 0.04em;
+    }
+    .idx-mod .idx-title {
+      font-size: 1.34rem; font-weight: 600; color: var(--ink);
+      text-decoration: none; line-height: 1.25;
+    }
+    .idx-mod .idx-title:hover { color: var(--accent); }
+    .idx-mod .idx-why {
+      font-family: var(--font-body); color: var(--ink-soft);
+      margin: 0 0 var(--s3); max-width: var(--measure);
+    }
+    .idx-mod .idx-foot {
+      display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s4);
+      font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faint);
+    }
+    .idx-mod .idx-open {
+      color: var(--accent); text-decoration: none; font-weight: 500;
+      font-family: var(--font-body); font-size: 0.92rem;
+    }
+    .idx-mod .idx-open:hover { text-decoration: underline; text-underline-offset: 2px; }
+    .idx-mod .idx-dot { color: var(--border); }
+
+    /* Prova social SOBRIA — citacao textual estatica, sem estrela, sem carrossel. */
+    .proof { margin: var(--s8) 0 var(--s7); border-top: 1px solid var(--border); padding-top: var(--s6); }
+    .proof .proof-kicker {
+      font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--ink-faint); margin: 0 0 var(--s5);
+    }
+    .proof blockquote {
+      margin: 0 0 var(--s6); padding: 0 0 0 var(--s5);
+      border-left: 2px solid var(--accent);
+    }
+    .proof blockquote p {
+      font-family: var(--font-disp); font-style: italic; font-weight: 300;
+      font-size: 1.18rem; line-height: 1.5; color: var(--ink); margin: 0 0 var(--s3);
+      max-width: 56ch;
+    }
+    .proof blockquote cite {
+      font-style: normal; font-family: var(--mono); font-size: 0.76rem;
+      letter-spacing: 0.03em; color: var(--ink-faint);
+    }
+    .proof blockquote cite b { color: var(--ink-soft); font-weight: 500; }
+
+    /* fecho da landing: CTA repetido, calmo */
+    .closer { margin-top: var(--s7); border-top: 1px solid var(--border); padding-top: var(--s6); }
+    .closer p { font-family: var(--font-body); color: var(--ink-soft); max-width: var(--measure); margin: 0 0 var(--s5); }
+
+    @media (max-width: 1080px) {
+      .stand .progress-line { width: 90px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SKIP LINK (primeiro focavel) -->
+  <a class="skip" href="#reading">Pular para o conteudo</a>
+
+  <!-- ===================== READER BAR — controles minimos ===================== -->
+  <div class="reader-bar">
+    <div class="reader-inner">
+      <a class="wordmark" href="./index.html">INEMA<span class="dot">.</span><span class="club">CLUB</span></a>
+      <div class="reader-controls" data-inema-appearance>
+        <span class="rc-read"><span data-inema-meter="curso"><span data-inema-meter-frac><strong>0</strong> de 14</span></span> percorrido</span>
+        <div class="rc-group" role="group" aria-label="Tema de leitura">
+          <button type="button" class="rc-btn" data-inema-set-theme="papel" aria-pressed="true">Papel</button>
+          <button type="button" class="rc-btn" data-inema-set-theme="sepia" aria-pressed="false">Sepia</button>
+          <button type="button" class="rc-btn" data-inema-set-theme="escuro" aria-pressed="false">Escuro</button>
+        </div>
+        <div class="rc-group" role="group" aria-label="Fonte de leitura">
+          <button type="button" class="rc-btn" data-inema-set-font="serif" aria-pressed="true">Serif</button>
+          <button type="button" class="rc-btn" data-inema-set-font="sans" aria-pressed="false">Sans</button>
+          <button type="button" class="rc-btn" data-inema-set-font="hyperlegible" aria-pressed="false" title="Atkinson Hyperlegible — legibilidade maxima">Aa&#8633;</button>
+        </div>
+        <div class="rc-group" role="group" aria-label="Tamanho do texto">
+          <button type="button" class="rc-btn" data-inema-set-fontscale="100" aria-pressed="true">A</button>
+          <button type="button" class="rc-btn" data-inema-set-fontscale="112" aria-pressed="false">A+</button>
+          <button type="button" class="rc-btn" data-inema-set-fontscale="125" aria-pressed="false">A++</button>
+        </div>
+        <div class="rc-group" role="group" aria-label="Largura da linha">
+          <button type="button" class="rc-btn" data-inema-set-linewidth="62" aria-pressed="false">Estreito</button>
+          <button type="button" class="rc-btn" data-inema-set-linewidth="66" aria-pressed="true">Medio</button>
+          <button type="button" class="rc-btn" data-inema-set-linewidth="70" aria-pressed="false">Largo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MASTHEAD + WAYFINDING ===================== -->
+  <header class="masthead">
+    <nav class="wayfind" aria-label="Onde voce esta">
+      <span><b>Curso Demo</b> &middot; Engenharia de Prompts</span>
+      <span class="sep">&middot;</span>
+      <span>1 trilha &middot; 2 modulos</span>
+      <span class="sep">&middot;</span>
+      <button type="button" data-inema-journey-open>
+        Minha jornada <span class="inema-journey-badge" data-inema-journey-badge data-count="0">0</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ===================== SPREAD: coluna de leitura + trilho de margem ===================== -->
+  <main class="spread">
+    <div class="leaf">
+
+      <!-- ============================= COLUNA DE LEITURA ============================= -->
+      <article class="reading" id="reading">
+
+        <!-- ============================= HERO TIPOGRAFICO PURO ============================= -->
+        <header class="hero">
+          <p class="lede-kicker">Engenharia de Prompts &middot; uma obra, nao um infoproduto</p>
+
+          <!-- Headline = DIAGNOSTICO da dor, nao promessa de transformacao. -->
+          <h1>Seu prompt nao esta <em>mal escrito</em>.<br>Quase sempre falta uma <em>peca</em> &mdash; e a saida morna te diz qual.</h1>
+
+          <p class="sub">Este curso nao promete dominar IA em trinta dias. Ele explica, com calma,
+            por que respostas genericas acontecem &mdash; e mostra o laco curto que conserta a
+            peca certa em vez de reescrever tudo.</p>
+
+          <!-- CTA UNICO + entrada de baixo risco -->
+          <div class="cta-row">
+            <a class="cta-primary" href="./curso/trilha1/modulo-1-1.html">
+              Comecar o Modulo 1 <span class="arr">&rarr;</span>
+            </a>
+            <span class="cta-low">ou, sem compromisso, <a href="./curso/trilha1/modulo-1-1.html#topico-1">ler so a primeira secao</a> antes.</span>
+          </div>
+          <span class="cta-note">Sem cadastro &middot; abre direto &middot; seu progresso fica so no seu navegador.</span>
+
+          <!-- Marcador de percurso silencioso: N de M + uma barra fina. SEM 3 barras. -->
+          <div class="stand">
+            <span class="lbl">Seu percurso</span>
+            <span data-inema-meter="curso">
+              <span data-inema-meter-frac><strong>0</strong> de 14</span> secoes
+              <span class="progress-line"><span class="progress-line__fill" data-inema-meter-fill></span></span>
+            </span>
+            <button type="button" data-inema-journey-open style="font-family:var(--mono);font-size:0.74rem;background:none;border:0;color:var(--accent);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;">continuar de onde parei</button>
+          </div>
+        </header>
+
+        <!-- ============================= O PORQUE (curta abertura editorial) ============================= -->
+        <section id="topico-porque"
+                 data-inema-topic="modulo-landing#topico-porque"
+                 data-inema-module="landing"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">Por que isto existe</span><span>&middot;</span><span>Leia antes do indice</span>
+          </div>
+          <h2 class="head"><span class="num">&sect;</span>Um pedido bem-feito, nao uma formula magica</h2>
+
+          <div class="prose">
+            <p class="lede" data-inema-block="landing-porque-p1">A maior parte do que se vende como "engenharia
+              de prompt" e uma lista de truques desconexos.<span class="sidenote-ref">1</span> Aqui a aposta e
+              outra: tratar o prompt como um <em>briefing</em> &mdash; um pedido com contexto, tarefa, formato,
+              exemplos e iteracao. Quando a saida vem morna, raramente o problema e a redacao; falta uma dessas
+              pecas, e a propria saida aponta qual.</p>
+
+            <p data-inema-block="landing-porque-p2">Por isso o curso e curto e fundo, em vez de longo e raso. Sao
+              <em>dois modulos</em> numa unica trilha: o primeiro instala o modelo mental das cinco pecas; o
+              segundo o leva da ideia solta ate um prompt que aguenta producao. Nenhuma promessa de atalho &mdash;
+              so o laco que voce vai repetir pelo resto da vida usando esses modelos.</p>
+          </div>
+
+          <details class="go-deeper">
+            <summary><span class="chev">&#9656;</span> Indo mais fundo: por que &ldquo;obra&rdquo; e nao &ldquo;infoproduto&rdquo;
+              <span class="opt">opcional</span></summary>
+            <div class="inner">
+              <p>Camada opcional &mdash; o indice abaixo ja basta para comecar. Um infoproduto otimiza a
+                <em>venda</em>: promessa grande na capa, densidade de bonus, urgencia fabricada. Uma obra otimiza a
+                <em>compreensao</em>: cada secao isola uma ideia, o detalhe formal desce para a margem ou para um
+                bloco como este, e o essencial nunca fica escondido atras de um clique.</p>
+              <p>Na pratica isso muda o que voce ve nesta pagina: nenhum contador de alunos, nenhum selo de
+                garantia, nenhuma contagem regressiva. So o diagnostico da dor, o indice real do que sera estudado
+                e um caminho de baixo risco para experimentar antes de se comprometer.</p>
+            </div>
+          </details>
+        </section>
+
+        <!-- ============================= CURRICULO COMO INDICE ============================= -->
+        <section id="topico-indice"
+                 data-inema-topic="modulo-landing#topico-indice"
+                 data-inema-module="landing"
+                 data-inema-track="1">
+          <div class="section-mark">
+            <span class="where">O indice</span><span>&middot;</span><span>1 trilha &middot; 2 modulos</span>
+          </div>
+          <h2 class="head"><span class="num">&sect;</span>O que voce vai estudar &mdash; sem bullet de beneficio</h2>
+
+          <div class="curriculo">
+            <div class="track-line">
+              <span class="track-tag">Trilha 1</span>
+              <h3 class="track-title">Fundamentos</h3>
+              <span class="track-meta">14 secoes &middot; ~32 min de leitura</span>
+            </div>
+
+            <!-- Modulo 1.1 — 1 paragrafo do "porque" -->
+            <article class="idx-mod">
+              <p class="idx-head">
+                <span class="idx-num">Modulo 1.1</span>
+                <a class="idx-title" href="./curso/trilha1/modulo-1-1.html">Fundamentos de Engenharia de Prompts</a>
+              </p>
+              <p class="idx-why">Antes de qualquer truque, o modelo mental. Este modulo mostra que um prompt e um
+                pedido com cinco pecas &mdash; contexto, tarefa, formato, exemplos e iteracao &mdash; e que toda
+                saida ruim e uma dessas pecas faltando. Voce sai sabendo <em>ler o defeito</em> da resposta e
+                consertar a peca certa, em vez de reescrever no escuro.</p>
+              <p class="idx-foot">
+                <span>7 secoes</span><span class="idx-dot">&middot;</span><span>~16 min</span>
+                <span class="idx-dot">&middot;</span>
+                <a class="idx-open" href="./curso/trilha1/modulo-1-1.html">Abrir o modulo &rarr;</a>
+              </p>
+            </article>
+
+            <!-- Modulo 1.2 — 1 paragrafo do "porque" -->
+            <article class="idx-mod">
+              <p class="idx-head">
+                <span class="idx-num">Modulo 1.2</span>
+                <a class="idx-title" href="./curso/trilha1/modulo-1-2.html">Da ideia ao prompt em producao</a>
+              </p>
+              <p class="idx-why">Saber as cinco pecas e uma coisa; aplica-las quando a tarefa e vaga e o resultado
+                precisa ser confiavel e outra. Este modulo pega aquele laco e o leva da ideia solta ate um prompt
+                que voce coloca em producao &mdash; com template reutilizavel, restricao de fonte e verificacao &mdash;
+                para que o acerto deixe de depender de sorte.</p>
+              <p class="idx-foot">
+                <span>7 secoes</span><span class="idx-dot">&middot;</span><span>~16 min</span>
+                <span class="idx-dot">&middot;</span>
+                <a class="idx-open" href="./curso/trilha1/modulo-1-2.html">Abrir o modulo &rarr;</a>
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <!-- ============================= PROVA SOCIAL SOBRIA ============================= -->
+        <section class="proof" aria-label="O que dizem">
+          <p class="proof-kicker">Sem estrelinhas, sem &ldquo;+10.000 alunos&rdquo; &mdash; so o que disseram</p>
+
+          <blockquote>
+            <p>&ldquo;Parei de tratar prompt como sorte. O modulo 1 me deu o vocabulario para
+              dizer <em>qual peca</em> faltou &mdash; e isso, sozinho, cortou metade das minhas idas e vindas.&rdquo;</p>
+            <cite><b>R. Tavares</b> &middot; analista de dados, usou no trabalho</cite>
+          </blockquote>
+
+          <blockquote>
+            <p>&ldquo;Esperava mais um curso de truques. Era um texto que eu de fato queria ler &mdash;
+              calmo, sem placar, com o detalhe difícil dobrado na margem para quando eu quisesse.&rdquo;</p>
+            <cite><b>L. Aoki</b> &middot; designer, leu em duas sessoes</cite>
+          </blockquote>
+        </section>
+
+        <!-- ============================= FECHO: CTA repetido, calmo ============================= -->
+        <section class="closer" aria-label="Comecar">
+          <p>O caminho mais honesto e simplesmente comecar e ver se o tom serve a voce. O Modulo 1
+            abre em uma pagina de leitura, sem cadastro &mdash; e voce pode parar na primeira secao se nao for o seu.</p>
+          <div class="cta-row">
+            <a class="cta-primary" href="./curso/trilha1/modulo-1-1.html">
+              Comecar o Modulo 1 <span class="arr">&rarr;</span>
+            </a>
+            <span class="cta-low">ou <a href="./curso/trilha1/modulo-1-1.html#topico-1">ler so a primeira secao</a> primeiro.</span>
+          </div>
+        </section>
+
+      </article>
+
+      <!-- ============================= TRILHO DE MARGEM ============================= -->
+      <aside class="margin-rail" aria-label="Margem: notas de autor, definicoes e seu painel de aprendizado">
+
+        <!-- ---- SECAO "porque": painel do aluno (vazio; learn.js preenche) + sidenotes de autor ---- -->
+        <aside data-inema-rail="modulo-landing#topico-porque"></aside>
+
+        <aside class="sidenote" data-kind="definicao">
+          <div class="tag">Definicao</div>
+          <b>Briefing.</b> Documento curto que orienta um trabalho: contexto, objetivo, restricoes e formato
+          esperado. Pedir bem a um modelo e, basicamente, escrever um bom briefing.
+        </aside>
+        <aside class="sidenote" data-kind="fundo">
+          <div class="tag">Indo mais fundo</div>
+          &ldquo;Morno&rdquo; tem nome tecnico: com contexto vago, a <i>distribuicao de continuacoes</i> provaveis
+          fica larga e o modelo regride a media. O Modulo 1 abre exatamente por essa intuicao.
+        </aside>
+        <aside class="sidenote" data-kind="fonte">
+          <div class="tag">Fonte</div>
+          A ideia de tratar o prompt como pedido estruturado aparece nos guias de prompting da Anthropic e da
+          OpenAI; o metodo &ldquo;pare e preveja&rdquo; vem de <i>Just JavaScript</i>, de Dan Abramov.
+          <div class="src-line">docs.anthropic.com &middot; justjavascript.com</div>
+        </aside>
+
+        <!-- ---- SECAO "indice" ---- -->
+        <aside data-inema-rail="modulo-landing#topico-indice"></aside>
+
+        <aside class="sidenote" data-kind="fundo">
+          <div class="tag">Por que o indice e denso</div>
+          A densidade do indice e prova de seriedade, nao falta de marketing: cada modulo traz o
+          <i>porque</i> por extenso, no lugar de uma lista de beneficios com check verde.
+        </aside>
+        <aside class="sidenote" data-kind="definicao">
+          <div class="tag">Como ler</div>
+          <b>Trilha</b> agrupa modulos; <b>modulo</b> agrupa secoes. Aqui ha 1 trilha, 2 modulos, 14 secoes.
+          Voce pode ler em ordem ou abrir direto a secao que te interessa.
+        </aside>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- COLOFAO -->
+  <footer class="colophon">
+    <span>INEMA.CLUB &middot; Caderno do aluno</span>
+    <span class="pg">Engenharia de Prompts &mdash; landing</span>
+    <span>Composto em Spectral &amp; Source Serif 4</span>
+  </footer>
+
+  <!-- ===================================================================
+       FIM DO <body>: carrega + inicializa learn.js (caminho RELATIVO).
+       Idempotente: chamar init() mais de uma vez nao duplica listeners.
+       =================================================================== -->
+  <script src="./assets/learn.js"></script>
+  <script>
+    if (window.INEMA && typeof window.INEMA.init === 'function') {
+      window.INEMA.init();
+    }
+  </script>
+</body>
+</html>
